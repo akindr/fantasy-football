@@ -1,0 +1,78 @@
+.league-overview {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.league-overview h1 {
+    color: #1d4ed8;
+    margin-bottom: 1.5rem;
+    font-size: 2rem;
+    text-align: center;
+}
+
+.team-info {
+    background-color: #f8fafc;
+    padding: 1.5rem;
+    border-radius: 6px;
+}
+
+.team-info h2 {
+    color: #334155;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+.record,
+.points {
+    margin: 1rem 0;
+    padding: 1rem;
+    background-color: #ffffff;
+    border-radius: 4px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.record h3,
+.points h3 {
+    color: #64748b;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.record p,
+.points p {
+    color: #0f172a;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.league-overview.loading {
+    text-align: center;
+    color: #64748b;
+    font-size: 1.25rem;
+}
+
+.league-overview.error {
+    text-align: center;
+    color: #ef4444;
+    font-size: 1.25rem;
+    padding: 2rem;
+    background-color: #fee2e2;
+    border-radius: 8px;
+}
+
+.logo {
+    width: 36px;
+    height: 36px;
+    border-radius: 100%;
+}
+
+.standings-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    text-align: left;
+}

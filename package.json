@@ -1,0 +1,74 @@
+{
+    "name": "test",
+    "version": "0.1.0",
+    "private": true,
+    "dependencies": {
+        "@google/genai": "^0.13.0",
+        "@tanstack/react-query": "^5.75.4",
+        "@testing-library/jest-dom": "^5.17.0",
+        "@testing-library/react": "^13.4.0",
+        "@testing-library/user-event": "^13.5.0",
+        "@types/jest": "^27.5.2",
+        "@types/node": "^16.18.80",
+        "@types/react": "^18.2.55",
+        "@types/react-dom": "^18.2.19",
+        "assert": "^2.1.0",
+        "browserify-zlib": "^0.2.0",
+        "buffer": "^6.0.3",
+        "crypto-browserify": "^3.12.0",
+        "https-browserify": "^1.0.0",
+        "process": "^0.11.10",
+        "querystring-es3": "^0.2.1",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "react-helmet": "^6.1.0",
+        "react-router-dom": "^6.22.1",
+        "react-scripts": "5.0.1",
+        "stream-browserify": "^3.0.0",
+        "stream-http": "^3.2.0",
+        "url": "^0.11.4",
+        "vm-browserify": "^1.1.2",
+        "web-vitals": "^2.1.4",
+        "yahoo-fantasy": "^1.0.0"
+    },
+    "scripts": {
+        "start": "HTTPS=true react-app-rewired start",
+        "server": "cd server && node --import ./ts-loader.js server.ts",
+        "dev": "concurrently \"npm run start\" \"npm run server\"",
+        "build": "react-app-rewired build",
+        "test": "react-app-rewired test",
+        "eject": "react-scripts eject",
+        "debug": "node --inspect --loader ts-node/esm server/server.ts"
+    },
+    "eslintConfig": {
+        "extends": [
+            "react-app",
+            "react-app/jest"
+        ]
+    },
+    "browserslist": {
+        "production": [
+            ">0.2%",
+            "not dead",
+            "not op_mini all"
+        ],
+        "development": [
+            "last 1 chrome version",
+            "last 1 firefox version",
+            "last 1 safari version"
+        ]
+    },
+    "devDependencies": {
+        "@types/react-helmet": "^6.1.11",
+        "@typescript-eslint/eslint-plugin": "^8.32.0",
+        "@typescript-eslint/parser": "^8.32.0",
+        "concurrently": "^8.2.2",
+        "customize-cra": "^1.0.0",
+        "eslint-config-prettier": "^10.1.2",
+        "eslint-config-react-app": "^7.0.1",
+        "eslint-plugin-react": "^7.37.5",
+        "eslint-plugin-react-hooks": "^5.2.0",
+        "prettier": "3.5.3",
+        "react-app-rewired": "^2.2.1"
+    }
+}
