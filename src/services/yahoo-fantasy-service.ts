@@ -1,6 +1,3 @@
-import YahooFantasy from 'yahoo-fantasy';
-import { API_CONFIG } from '../config';
-
 export interface Team {
     team_id: string;
     name: string;
@@ -13,38 +10,7 @@ export interface Team {
 }
 
 export class YahooFantasyService {
-    private yf: any;
-    private token: string | null = null;
-
-    constructor() {
-        try {
-            if (!API_CONFIG.clientId || !API_CONFIG.clientSecret) {
-                throw new Error('Yahoo API credentials are missing. Please check your .env file.');
-            }
-
-            // Initialize with credentials
-            this.yf = new YahooFantasy(API_CONFIG.clientId, API_CONFIG.clientSecret);
-            // Check if auth token is in session storage
-            const token = sessionStorage.getItem('yahoo_fantasy_token');
-            if (token) {
-                this.setToken(token);
-            }
-        } catch (error) {
-            console.error('Error initializing YahooFantasyService:', error);
-            throw error;
-        }
-    }
-
-    setToken(token: string) {
-        try {
-            sessionStorage.setItem('yahoo_fantasy_token', token);
-            this.token = token;
-            this.yf.setUserToken(token);
-        } catch (error) {
-            console.error('Error setting token:', error);
-            throw error;
-        }
-    }
+    constructor() {}
 
     async makeRequest(url: string, options: RequestInit = {}) {
         const response = await fetch(url, {

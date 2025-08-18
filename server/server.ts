@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
 import cors from 'cors';
 import fetch from 'node-fetch';
 import cookieParser from 'cookie-parser';
@@ -7,7 +7,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
-import { YahooStandingsResponse, transformStandings } from './data-mappers.js';
+import { type YahooStandingsResponse, transformStandings } from './data-mappers.ts';
 
 dotenv.config();
 
@@ -27,7 +27,7 @@ const port = 3001;
 
 // SSL certificate options
 const httpsOptions = {
-    key: fs.readFileSync(path.join(__dirname, '../.cert/localhost-key.pem')),
+    key: fs.readFileSync(path.join(__dirname, '../.cert/localhost.key.pem')),
     cert: fs.readFileSync(path.join(__dirname, '../.cert/localhost.pem')),
 };
 
@@ -48,7 +48,7 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
-app.post('/oauth/token', async (req: Request, res: Response) => {
+app.post('/oauth/token', async (req: express.Request, res: express.Response) => {
     try {
         const { code } = req.body;
         console.log(code);
@@ -62,7 +62,7 @@ app.post('/oauth/token', async (req: Request, res: Response) => {
 
         const payload = new URLSearchParams({
             grant_type: 'authorization_code',
-            redirect_uri: 'https://lvh.me:3000/auth/callback',
+            redirect_uri: 'https://localhost:3000/auth/callback',
             client_id: clientId,
             client_secret: clientSecret,
             code: code,
@@ -101,7 +101,7 @@ app.post('/oauth/token', async (req: Request, res: Response) => {
 });
 
 // Proxy to get standings for the FF league
-app.get('/api/standings', async (req: Request, res: Response) => {
+app.get('/api/standings', async (req: express.Request, res: express.Response) => {
     if (!req.cookies.token) {
         res.status(401).json({ error: 'Unauthorized' });
         return;

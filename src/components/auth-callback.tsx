@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { authService } from '../services/auth-service';
-import { yahooFantasyService } from '../services/yahoo-fantasy-service';
 
 export const AuthCallback: React.FC = () => {
     const [searchParams] = useSearchParams();
@@ -17,8 +16,7 @@ export const AuthCallback: React.FC = () => {
             }
 
             try {
-                const token = await authService.handleCallback(code);
-                yahooFantasyService.setToken(token);
+                await authService.handleCallback(code);
                 navigate('/');
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Authentication failed');

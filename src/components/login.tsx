@@ -1,6 +1,5 @@
 import React from 'react';
 import { authService } from '../services/auth-service';
-import './login.css';
 
 export const Login: React.FC = () => {
     const handleLogin = () => {
@@ -10,7 +9,7 @@ export const Login: React.FC = () => {
 
     return (
         <div className="login">
-            <h1>Welcome to Fantasy League</h1>
+            <h1>Welcome to Fantasy Football</h1>
             <p>Please log in with your Yahoo account to continue.</p>
             <button onClick={handleLogin}>Login with Yahoo</button>
         </div>

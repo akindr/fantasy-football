@@ -3,6 +3,10 @@
     "version": "1.0.0",
     "type": "module",
     "private": true,
+    "scripts": {
+        "start-server": "node dist/server.js",
+        "dev-server": "ts-node server.ts"
+    },
     "dependencies": {
         "cookie-parser": "^1.4.7",
         "cors": "^2.8.5",
@@ -13,8 +17,8 @@
     "devDependencies": {
         "@types/cookie-parser": "^1.4.8",
         "@types/cors": "^2.8.17",
+        "@types/express": "^5.0.2",
         "@types/node-fetch": "^2.6.12",
-        "eslint-plugin-react-hooks": "^5.2.0",
         "ts-node": "^10.9.2",
         "typescript": "^5.8.3"
     }
