@@ -1,7 +1,6 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import type { TransformedStandings } from '../../server/data-mappers';
-import './league-overview.css';
 
 export const LeagueOverview: React.FC = () => {
     const {

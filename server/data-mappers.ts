@@ -1,4 +1,4 @@
-export interface YahooStandingsResponse {
+export type YahooStandingsResponse = {
     fantasy_content: {
         league: Array<{
             league_key?: string;
@@ -15,9 +15,9 @@ export interface YahooStandingsResponse {
             }>;
         }>;
     };
-}
+};
 
-interface TeamInfo {
+type TeamInfo = {
     team_key: string;
     team_id: string;
     name: string;
@@ -27,17 +27,17 @@ interface TeamInfo {
             url: string;
         };
     }>;
-}
+};
 
-interface TeamPoints {
+type TeamPoints = {
     team_points: {
         coverage_type: string;
         season: string;
         total: string;
     };
-}
+};
 
-interface TeamStandings {
+type TeamStandings = {
     team_standings: {
         rank: number;
         playoff_seed: string;
@@ -54,8 +54,8 @@ interface TeamStandings {
         points_for: string;
         points_against: number;
     };
-}
-export interface TransformedStandings {
+};
+export type TransformedStandings = {
     leagueName: string;
     teams: Array<{
         teamId: string;
@@ -72,7 +72,7 @@ export interface TransformedStandings {
             value: number;
         };
     }>;
-}
+};
 
 export function transformStandings(data: YahooStandingsResponse): TransformedStandings {
     console.log('transformStandings', data);

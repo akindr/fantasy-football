@@ -1,8 +1,6 @@
-import './polyfills';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { QueryProvider } from './components/query-provider';
-import './index.css';
 import App from './app';
 import reportWebVitals from './reportWebVitals';
 
