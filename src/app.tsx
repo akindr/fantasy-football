@@ -17,9 +17,7 @@ function App() {
                 <title>Austins Fantasy Football</title>
             </Helmet>
             <div className="App">
-                <header className="App-header">
-                    <h1>Yahoo Fantasy Football</h1>
-                </header>
+                <header className="text-8xl">Fantasy Football Rules</header>
                 <main>
                     <Routes>
                         <Route path="/login" element={<Login />} />
