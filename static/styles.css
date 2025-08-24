@@ -1,2 +1,181 @@
 /* include tailwind */
 @import 'tailwindcss';
+
+#root {
+    width: 100vw;
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* theming */
+@theme {
+    --color-dark-blue: #101935;
+    --color-turq: #9ad4d6;
+    --color-soft-white: #f2fdff;
+    --color-light-purple: #dbcbd8;
+    --color-purple: #564787;
+    --font-strike: StrikeCatch;
+    --font-strike-extrude: StrikeCatchExtrude;
+    --font-sans:
+        StikeCatch, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+/* fonts */
+/* Webfont: StrikeCatch-Extrude */
+@font-face {
+    font-family: 'StrikeCatchExtrude';
+    src: url('./fonts/StrikeCatch-Extrude.eot'); /* IE9 Compat Modes */
+    src:
+        url('./fonts/StrikeCatch-Extrude.eot?#iefix') format('embedded-opentype'),
+        /* IE6-IE8 */ url('./fonts/StrikeCatch-Extrude.woff') format('woff'),
+        /* Modern Browsers */ url('./fonts/StrikeCatch-Extrude.woff2') format('woff2'),
+        /* Modern Browsers */ url('./fonts/StrikeCatch-Extrude.ttf') format('truetype'); /* Safari, Android, iOS */
+    font-style: normal;
+    font-weight: normal;
+    text-rendering: optimizeLegibility;
+}
+/* Webfont: StrikeCatch-Slash */
+@font-face {
+    font-family: 'StrikeCatchSlash';
+    src: url('./fonts/StrikeCatch-Slash.eot'); /* IE9 Compat Modes */
+    src:
+        url('./fonts/StrikeCatch-Slash.eot?#iefix') format('embedded-opentype'),
+        /* IE6-IE8 */ url('./fonts/StrikeCatch-Slash.woff') format('woff'),
+        /* Modern Browsers */ url('./fonts/StrikeCatch-Slash.woff2') format('woff2'),
+        /* Modern Browsers */ url('./fonts/StrikeCatch-Slash.ttf') format('truetype'); /* Safari, Android, iOS */
+    font-style: normal;
+    font-weight: normal;
+    text-rendering: optimizeLegibility;
+}
+/* Webfont: StrikeCatch-Regular */
+@font-face {
+    font-family: 'StrikeCatch';
+    src: url('./fonts/StrikeCatch-Regular.eot'); /* IE9 Compat Modes */
+    src:
+        url('./fonts/StrikeCatch-Regular.eot?#iefix') format('embedded-opentype'),
+        /* IE6-IE8 */ url('./fonts/StrikeCatch-Regular.woff') format('woff'),
+        /* Modern Browsers */ url('./fonts/StrikeCatch-Regular.woff2') format('woff2'),
+        /* Modern Browsers */ url('./fonts/StrikeCatch-Regular.ttf') format('truetype'); /* Safari, Android, iOS */
+    font-style: normal;
+    font-weight: normal;
+    text-rendering: optimizeLegibility;
+}
+/* Webfont: StrikeCatch-OutlineSlash */
+@font-face {
+    font-family: 'StrikeCatchOutlineSlash';
+    src: url('./fonts/StrikeCatch-OutlineSlash.eot'); /* IE9 Compat Modes */
+    src:
+        url('./fonts/StrikeCatch-OutlineSlash.eot?#iefix') format('embedded-opentype'),
+        /* IE6-IE8 */ url('./fonts/StrikeCatch-OutlineSlash.woff') format('woff'),
+        /* Modern Browsers */ url('./fonts/StrikeCatch-OutlineSlash.woff2') format('woff2'),
+        /* Modern Browsers */ url('./fonts/StrikeCatch-OutlineSlash.ttf') format('truetype'); /* Safari, Android, iOS */
+    font-style: normal;
+    font-weight: normal;
+    text-rendering: optimizeLegibility;
+}
+/* Webfont: StrikeCatch-Outline */
+@font-face {
+    font-family: 'StrikeCatchOutline';
+    src: url('./fonts/StrikeCatch-Outline.eot'); /* IE9 Compat Modes */
+    src:
+        url('./fonts/StrikeCatch-Outline.eot?#iefix') format('embedded-opentype'),
+        /* IE6-IE8 */ url('./fonts/StrikeCatch-Outline.woff') format('woff'),
+        /* Modern Browsers */ url('./fonts/StrikeCatch-Outline.woff2') format('woff2'),
+        /* Modern Browsers */ url('./fonts/StrikeCatch-Outline.ttf') format('truetype'); /* Safari, Android, iOS */
+    font-style: normal;
+    font-weight: normal;
+    text-rendering: optimizeLegibility;
+}
+/* Webfont: StrikeCatch-ItalicSlash */
+@font-face {
+    font-family: 'StrikeCatchSlash';
+    src: url('./fonts/StrikeCatch-ItalicSlash.eot'); /* IE9 Compat Modes */
+    src:
+        url('./fonts/StrikeCatch-ItalicSlash.eot?#iefix') format('embedded-opentype'),
+        /* IE6-IE8 */ url('./fonts/StrikeCatch-ItalicSlash.woff') format('woff'),
+        /* Modern Browsers */ url('./fonts/StrikeCatch-ItalicSlash.woff2') format('woff2'),
+        /* Modern Browsers */ url('./fonts/StrikeCatch-ItalicSlash.ttf') format('truetype'); /* Safari, Android, iOS */
+    font-style: italic;
+    font-weight: normal;
+    text-rendering: optimizeLegibility;
+}
+/* Webfont: StrikeCatch-ItaOutlineSlash */
+@font-face {
+    font-family: 'StrikeCatchOutlineSlash';
+    src: url('./fonts/StrikeCatch-ItalicOutlineSlash.eot'); /* IE9 Compat Modes */
+    src:
+        url('./fonts/StrikeCatch-ItalicOutlineSlash.eot?#iefix') format('embedded-opentype'),
+        /* IE6-IE8 */ url('./fonts/StrikeCatch-ItalicOutlineSlash.woff') format('woff'),
+        /* Modern Browsers */ url('./fonts/StrikeCatch-ItalicOutlineSlash.woff2') format('woff2'),
+        /* Modern Browsers */ url('./fonts/StrikeCatch-ItalicOutlineSlash.ttf') format('truetype'); /* Safari, Android, iOS */
+    font-style: italic;
+    font-weight: normal;
+    text-rendering: optimizeLegibility;
+}
+/* Webfont: StrikeCatch-ItalicOutline */
+@font-face {
+    font-family: 'StrikeCatchOutline';
+    src: url('./fonts/StrikeCatch-ItalicOutline.eot'); /* IE9 Compat Modes */
+    src:
+        url('./fonts/StrikeCatch-ItalicOutline.eot?#iefix') format('embedded-opentype'),
+        /* IE6-IE8 */ url('./fonts/StrikeCatch-ItalicOutline.woff') format('woff'),
+        /* Modern Browsers */ url('./fonts/StrikeCatch-ItalicOutline.woff2') format('woff2'),
+        /* Modern Browsers */ url('./fonts/StrikeCatch-ItalicOutline.ttf') format('truetype'); /* Safari, Android, iOS */
+    font-style: italic;
+    font-weight: normal;
+    text-rendering: optimizeLegibility;
+}
+/* Webfont: StrikeCatch-ItaExtrudeSlash */
+@font-face {
+    font-family: 'StrikeCatchExtrudeSlash';
+    src: url('./fonts/StrikeCatch-ItalicExtrudeSlash.eot'); /* IE9 Compat Modes */
+    src:
+        url('./fonts/StrikeCatch-ItalicExtrudeSlash.eot?#iefix') format('embedded-opentype'),
+        /* IE6-IE8 */ url('./fonts/StrikeCatch-ItalicExtrudeSlash.woff') format('woff'),
+        /* Modern Browsers */ url('./fonts/StrikeCatch-ItalicExtrudeSlash.woff2') format('woff2'),
+        /* Modern Browsers */ url('./fonts/StrikeCatch-ItalicExtrudeSlash.ttf') format('truetype'); /* Safari, Android, iOS */
+    font-style: italic;
+    font-weight: normal;
+    text-rendering: optimizeLegibility;
+}
+/* Webfont: StrikeCatch-ItalicExtrude */
+@font-face {
+    font-family: 'StrikeCatchExtrude';
+    src: url('./fonts/StrikeCatch-ItalicExtrude.eot'); /* IE9 Compat Modes */
+    src:
+        url('./fonts/StrikeCatch-ItalicExtrude.eot?#iefix') format('embedded-opentype'),
+        /* IE6-IE8 */ url('./fonts/StrikeCatch-ItalicExtrude.woff') format('woff'),
+        /* Modern Browsers */ url('./fonts/StrikeCatch-ItalicExtrude.woff2') format('woff2'),
+        /* Modern Browsers */ url('./fonts/StrikeCatch-ItalicExtrude.ttf') format('truetype'); /* Safari, Android, iOS */
+    font-style: italic;
+    font-weight: normal;
+    text-rendering: optimizeLegibility;
+}
+/* Webfont: StrikeCatch-Italic */
+@font-face {
+    font-family: 'StrikeCatch';
+    src: url('./fonts/StrikeCatch-Italic.eot'); /* IE9 Compat Modes */
+    src:
+        url('./fonts/StrikeCatch-Italic.eot?#iefix') format('embedded-opentype'),
+        /* IE6-IE8 */ url('./fonts/StrikeCatch-Italic.woff') format('woff'),
+        /* Modern Browsers */ url('./fonts/StrikeCatch-Italic.woff2') format('woff2'),
+        /* Modern Browsers */ url('./fonts/StrikeCatch-Italic.ttf') format('truetype'); /* Safari, Android, iOS */
+    font-style: italic;
+    font-weight: normal;
+    text-rendering: optimizeLegibility;
+}
+/* Webfont: StrikeCatch-ExtrudeSlash */
+@font-face {
+    font-family: 'StrikeCatchExtrudeSlash';
+    src: url('./fonts/StrikeCatch-ExtrudeSlash.eot'); /* IE9 Compat Modes */
+    src:
+        url('./fonts/StrikeCatch-ExtrudeSlash.eot?#iefix') format('embedded-opentype'),
+        /* IE6-IE8 */ url('./fonts/StrikeCatch-ExtrudeSlash.woff') format('woff'),
+        /* Modern Browsers */ url('./fonts/StrikeCatch-ExtrudeSlash.woff2') format('woff2'),
+        /* Modern Browsers */ url('./fonts/StrikeCatch-ExtrudeSlash.ttf') format('truetype'); /* Safari, Android, iOS */
+    font-style: normal;
+    font-weight: normal;
+    text-rendering: optimizeLegibility;
+}
