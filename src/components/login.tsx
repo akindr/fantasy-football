@@ -8,10 +8,14 @@ export const Login: React.FC = () => {
     };
 
     return (
-        <div className="login">
-            <h1>Welcome to Fantasy Football</h1>
-            <p>Please log in with your Yahoo account to continue.</p>
-            <button onClick={handleLogin}>Login with Yahoo</button>
+        <div className="p-4">
+            <p className="mb-4">Please log in with your Yahoo account to continue:</p>
+            <button
+                className="button rounded-full px-5 py-2 cursor-pointer transition-colors bg-turq"
+                onClick={handleLogin}
+            >
+                Login with Yahoo
+            </button>
         </div>
     );
 };
