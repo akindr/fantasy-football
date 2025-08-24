@@ -2,8 +2,10 @@
     "name": "austin-yahoo-fantasy-football",
     "version": "0.1.0",
     "private": true,
+    "type": "module",
     "dependencies": {
         "@google/genai": "^0.13.0",
+        "@tailwindcss/vite": "^4.1.12",
         "@tanstack/react-query": "^5.75.4",
         "@testing-library/jest-dom": "^5.17.0",
         "@testing-library/react": "^13.4.0",
@@ -24,6 +26,7 @@
         "react-router-dom": "^6.22.1",
         "stream-browserify": "^3.0.0",
         "stream-http": "^3.2.0",
+        "tailwindcss": "^4.1.12",
         "url": "^0.11.4",
         "vm-browserify": "^1.1.2",
         "web-vitals": "^2.1.4",
