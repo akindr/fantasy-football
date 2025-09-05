@@ -154,3 +154,95 @@ export function transformStandings(data: YahooStandingsResponse): TransformedSta
         teams: transformedTeams,
     };
 }
+
+// Types for Yahoo matchups data structure
+type YahooMatchupTeam = {
+    team: Array<Array<any> | TeamPoints>;
+};
+
+type YahooMatchup = {
+    matchup: Array<{
+        teams: {
+            [key: string]: YahooMatchupTeam;
+        };
+    }>;
+};
+
+type YahooMatchupsData = {
+    [key: string]: YahooMatchup;
+} & {
+    count: number;
+};
+
+type YahooScoreboardResponse = {
+    fantasy_content: {
+        league: Array<{
+            scoreboard?: Array<{
+                matchups?: YahooMatchupsData;
+            }>;
+        }>;
+    };
+};
+
+type TransformedMatchup = {
+    team1: {
+        name: string;
+        logo: string;
+        points: number;
+    };
+    team2: {
+        name: string;
+        logo: string;
+        points: number;
+    };
+};
+
+export function transformMatchups(data: YahooScoreboardResponse): TransformedMatchup[] {
+    const matchups = data?.fantasy_content?.league[1]?.scoreboard?.[0]?.matchups;
+
+    if (!matchups || !matchups.count) {
+        return [];
+    }
+
+    const transformedMatchups: TransformedMatchup[] = [];
+
+    for (let matchupId = 0; matchupId < matchups.count; matchupId++) {
+        const matchup = matchups[matchupId.toString()]?.matchup?.[0]?.teams;
+
+        if (!matchup) {
+            continue;
+        }
+
+        const team1Data = matchup['0']?.team;
+        const team2Data = matchup['1']?.team;
+
+        if (!team1Data || !team2Data) {
+            continue;
+        }
+
+        // Team 1 information - following the Python array indexing
+        const team1Name = (team1Data[0] as any)?.[2]?.name || '';
+        const team1Logo = (team1Data[0] as any)?.[5]?.team_logos?.[0]?.team_logo?.url || '';
+        const team1Points = parseFloat((team1Data[1] as TeamPoints)?.team_points?.total || '0');
+
+        // Team 2 information - following the Python array indexing
+        const team2Name = (team2Data[0] as any)?.[2]?.name || '';
+        const team2Logo = (team2Data[0] as any)?.[5]?.team_logos?.[0]?.team_logo?.url || '';
+        const team2Points = parseFloat((team2Data[1] as TeamPoints)?.team_points?.total || '0');
+
+        transformedMatchups.push({
+            team1: {
+                name: team1Name,
+                logo: team1Logo,
+                points: team1Points,
+            },
+            team2: {
+                name: team2Name,
+                logo: team2Logo,
+                points: team2Points,
+            },
+        });
+    }
+
+    return transformedMatchups;
+}

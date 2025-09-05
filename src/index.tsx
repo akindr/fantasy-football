@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { QueryProvider } from './components/query-provider';
+import { QueryProvider } from './components/shared/query-provider';
 import App from './app';
 import reportWebVitals from './reportWebVitals';
 

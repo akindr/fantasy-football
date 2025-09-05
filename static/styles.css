@@ -6,20 +6,27 @@
     height: 100vh;
     overflow-y: auto;
     overflow-x: hidden;
+    /* background-color: var(--color-bg-white); */
 }
+
+/*
+red E63946
+off white F1FAEE
+light blue A8DADC
+medium blue 457B9D
+dark blue 1D3557
+*/
 
 /* theming */
 @theme {
-    --color-dark-blue: #101935;
-    --color-turq: #9ad4d6;
-    --color-soft-white: #f2fdff;
-    --color-light-purple: #dbcbd8;
-    --color-purple: #564787;
-    --font-strike: StrikeCatch;
-    --font-strike-extrude: StrikeCatchExtrude;
-    --font-sans:
-        StikeCatch, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --color-red: #e63946;
+    --color-off-white: #f1faee;
+    --color-light-blue: #a8dadc;
+    --color-medium-blue: #457b9d;
+    --color-dark-blue: #1d3557;
+    --default-font-family: Helvetica;
+    --font-sans: Helvetica, sans-serif;
+    --color-bg-white: #f1faee;
 }
 
 /* fonts */
