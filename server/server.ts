@@ -8,7 +8,6 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { type YahooStandingsResponse, transformStandings } from './data-mappers.ts';
-import { GeminiGateway } from './gemini-gateway.ts';
 
 dotenv.config();
 
@@ -31,8 +30,6 @@ const httpsOptions = {
     key: fs.readFileSync(path.join(__dirname, '../.cert/localhost.key.pem')),
     cert: fs.readFileSync(path.join(__dirname, '../.cert/localhost.pem')),
 };
-
-const geminiGateway = new GeminiGateway(process.env.GEMINI_API_KEY ?? '');
 
 // CORS configuration
 app.use(
@@ -128,13 +125,6 @@ app.get('/api/standings', async (req: express.Request, res: express.Response) =>
         console.error('Error fetching standings:', e);
         res.status(500).json({ error: 'Unexpected error', original: e });
     }
-});
-
-app.get('/api/generate-image', async (req: express.Request, res: express.Response) => {
-    const prompt = req.query.prompt as string;
-    console.log('prompt', prompt);
-    const image = await geminiGateway.generateImage(prompt);
-    res.json({ image });
 });
 
 // Create HTTPS server
