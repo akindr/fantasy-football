@@ -24,7 +24,7 @@ export const AuthCallback: React.FC = () => {
         };
 
         handleCallback();
-    }, [searchParams, navigate]);
+    }, []);
 
     if (error) {
         return (

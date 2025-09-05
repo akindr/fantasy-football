@@ -24,6 +24,9 @@ export function NavigationBar() {
             <NavLink role="button" to="/standings" className={buttonClassNameHelper}>
                 Standings
             </NavLink>
+            <NavLink role="button" to="/image-gen" className={buttonClassNameHelper}>
+                Images
+            </NavLink>
             <NavLink role="button" to="/login" className={buttonClassNameHelper}>
                 Login
             </NavLink>
