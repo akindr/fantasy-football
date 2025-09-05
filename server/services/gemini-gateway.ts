@@ -1,10 +1,14 @@
 import { GoogleGenAI, Modality } from '@google/genai';
-import * as fs from 'node:fs';
 
 export class GeminiGateway {
     ai: GoogleGenAI;
 
-    constructor(apiKey: string) {
+    constructor() {
+        const apiKey = process.env.REACT_APP_GEMINI_API_KEY ?? '';
+
+        if (!apiKey) {
+            throw new Error('REACT_APP_GEMINI_API_KEY env variable is not set');
+        }
         this.ai = new GoogleGenAI({ apiKey });
     }
 

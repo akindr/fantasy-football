@@ -8,7 +8,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { type YahooStandingsResponse, transformStandings } from './data-mappers.ts';
-import { GeminiGateway } from './gemini-gateway.ts';
+import { GeminiGateway } from './services/gemini-gateway.ts';
+import { YahooGateway } from './services/yahoo-gateway.ts';
 
 dotenv.config();
 
@@ -16,7 +17,7 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-interface TokenData {
+export interface TokenData {
     access_token: string;
     refresh_token?: string;
     expires_in?: number;
@@ -25,14 +26,14 @@ interface TokenData {
 
 const app = express();
 const port = 3001;
+const geminiGateway = new GeminiGateway();
+const yahooGateway = new YahooGateway();
 
 // SSL certificate options
 const httpsOptions = {
     key: fs.readFileSync(path.join(__dirname, '../.cert/localhost.key.pem')),
     cert: fs.readFileSync(path.join(__dirname, '../.cert/localhost.pem')),
 };
-
-const geminiGateway = new GeminiGateway(process.env.REACT_APP_GEMINI_API_KEY ?? '');
 
 // CORS configuration
 app.use(
@@ -51,6 +52,7 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
+// TODO move into gateway
 app.post('/oauth/token', async (req: express.Request, res: express.Response) => {
     try {
         const { code } = req.body;
@@ -109,23 +111,43 @@ app.get('/api/standings', async (req: express.Request, res: express.Response) =>
         res.status(401).json({ error: 'Unauthorized' });
         return;
     }
-    const tokenData = req.cookies.token as TokenData;
-    console.log('tokenData', tokenData);
     try {
         // TODO specify league id and year from UI
-        const standings = await fetch(
-            'https://fantasysports.yahooapis.com/fantasy/v2/league/449.l.33427/standings?format=json',
-            {
-                headers: {
-                    Authorization: `Bearer ${tokenData.access_token}`,
-                },
-            }
-        );
-        const response: YahooStandingsResponse = await standings.json();
-        const transformedData = transformStandings(response);
-        res.json(transformedData);
+        const standings = await yahooGateway.getStandings(req);
+        res.json(standings);
     } catch (e) {
         console.error('Error fetching standings:', e);
+        res.status(500).json({ error: 'Unexpected error', original: e });
+    }
+});
+
+// Proxy to get matchups for the FF league
+app.get('/api/matchups', async (req: express.Request, res: express.Response) => {
+    if (!req.cookies.token) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+    }
+    try {
+        // TODO specify league id and year from UI
+        const matchups = await yahooGateway.getMatchups(req);
+        res.json(matchups);
+    } catch (e) {
+        console.error('Error fetching matchups:', e);
+        res.status(500).json({ error: 'Unexpected error', original: e });
+    }
+});
+
+// Debug endpoint to get available NFL games
+app.get('/api/games-debug', async (req: express.Request, res: express.Response) => {
+    if (!req.cookies.token) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+    }
+    try {
+        const games = await yahooGateway.getGames(req);
+        res.json(games);
+    } catch (e) {
+        console.error('Error fetching games:', e);
         res.status(500).json({ error: 'Unexpected error', original: e });
     }
 });

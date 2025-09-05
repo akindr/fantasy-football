@@ -3,12 +3,13 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Helmet } from 'react-helmet';
 
 import { authService } from './services/auth-service';
-import { Login } from './components/login';
-import { AuthCallback } from './components/auth-callback';
-import { LeagueOverview } from './components/league-overview';
-import { Home } from './components/home';
-import { NavigationBar } from './components/navigation-bar';
-import { ImageGen } from './components/image-gen';
+import { Login } from './components/routes/login';
+import { AuthCallback } from './components/routes/auth-callback';
+import { LeagueOverview } from './components/routes/league-overview';
+import { Matchups } from './components/routes/matchups';
+import { Home } from './components/routes/home';
+import { NavigationBar } from './components/shared/navigation-bar';
+import { ImageGen } from './components/routes/image-gen';
 
 const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     return authService.isAuthenticated() ? <>{children}</> : <Navigate to="/login" />;
@@ -18,17 +19,12 @@ function App() {
     return (
         <Router>
             <Helmet>
-                <title>Austins Fantasy Football</title>
+                <title>Get Schwifty Fantasy Football</title>
             </Helmet>
             <div>
-                <div className="bg-dark-blue p-4">
-                    <div className="text-6xl mb-2">
-                        <span className="font-strike-extrude italic text-soft-white">
-                            Get Scwhifty&nbsp;
-                        </span>
-                        <span className="font-strike-extrude italic text-turq">
-                            Fantasy Football
-                        </span>
+                <div className="bg-dark-blue">
+                    <div className="text-4xl p-4 flex flex-row">
+                        <span className="text-white">Get Scwhifty FF</span>
                     </div>
                     <NavigationBar />
                 </div>
@@ -43,6 +39,14 @@ function App() {
                             element={
                                 <PrivateRoute>
                                     <LeagueOverview />
+                                </PrivateRoute>
+                            }
+                        />
+                        <Route
+                            path="/matchups"
+                            element={
+                                <PrivateRoute>
+                                    <Matchups />
                                 </PrivateRoute>
                             }
                         />

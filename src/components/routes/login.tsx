@@ -1,5 +1,5 @@
 import React from 'react';
-import { authService } from '../services/auth-service';
+import { authService } from '../../services/auth-service';
 
 export const Login: React.FC = () => {
     const handleLogin = () => {

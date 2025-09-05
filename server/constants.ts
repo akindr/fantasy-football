@@ -1,0 +1,4 @@
+const GAME_KEY = '461';
+const SCHWIFTY_LEAGUE_ID = '88883';
+
+export { GAME_KEY, SCHWIFTY_LEAGUE_ID };

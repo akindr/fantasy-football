@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { authService } from '../services/auth-service';
+import { authService } from '../../services/auth-service';
 
 export const AuthCallback: React.FC = () => {
     const [searchParams] = useSearchParams();

@@ -1,6 +1,6 @@
 import React from 'react';
 import { QueryClient, QueryClientProvider, QueryFunction } from '@tanstack/react-query';
-import { yahooFantasyService } from '../services/yahoo-fantasy-service';
+import { yahooFantasyService } from '../../services/yahoo-fantasy-service';
 
 const makeRequest: QueryFunction = async ({ queryKey }) => {
     return yahooFantasyService.query(queryKey as string[]);
