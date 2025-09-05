@@ -1,12 +1,14 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
+
 import { authService } from './services/auth-service';
 import { Login } from './components/login';
 import { AuthCallback } from './components/auth-callback';
 import { LeagueOverview } from './components/league-overview';
 import { Home } from './components/home';
 import { NavigationBar } from './components/navigation-bar';
-import { Helmet } from 'react-helmet';
+import { ImageGen } from './components/image-gen';
 
 const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     return authService.isAuthenticated() ? <>{children}</> : <Navigate to="/login" />;
@@ -35,6 +37,7 @@ function App() {
                         <Route path="/" element={<Home />} />
                         <Route path="/login" element={<Login />} />
                         <Route path="/auth/callback" element={<AuthCallback />} />
+                        <Route path="/image-gen" element={<ImageGen />} />
                         <Route
                             path="/standings"
                             element={
