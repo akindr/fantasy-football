@@ -7,9 +7,9 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
-import { type YahooStandingsResponse, transformStandings } from './data-mappers.ts';
 import { GeminiGateway } from './services/gemini-gateway.ts';
 import { YahooGateway } from './services/yahoo-gateway.ts';
+import { logger } from './services/logger.ts';
 
 dotenv.config();
 
@@ -17,17 +17,21 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const clientId = process.env.REACT_APP_YAHOO_CLIENT_ID || '';
+const clientSecret = process.env.REACT_APP_YAHOO_CLIENT_SECRET || '';
+
 export interface TokenData {
     access_token: string;
     refresh_token?: string;
     expires_in?: number;
     token_type?: string;
+    expiry_server_time?: number;
 }
 
 const app = express();
 const port = 3001;
 const geminiGateway = new GeminiGateway();
-const yahooGateway = new YahooGateway();
+const yahooGateway = new YahooGateway(clientId, clientSecret);
 
 // SSL certificate options
 const httpsOptions = {
@@ -56,14 +60,7 @@ app.use(cookieParser());
 app.post('/oauth/token', async (req: express.Request, res: express.Response) => {
     try {
         const { code } = req.body;
-        console.log(code);
-
-        const clientId = process.env.REACT_APP_YAHOO_CLIENT_ID;
-        const clientSecret = process.env.REACT_APP_YAHOO_CLIENT_SECRET;
-
-        if (!clientId || !clientSecret) {
-            throw new Error('Missing client credentials');
-        }
+        logger.info('oauth code', { code });
 
         const payload = new URLSearchParams({
             grant_type: 'authorization_code',
@@ -73,7 +70,7 @@ app.post('/oauth/token', async (req: express.Request, res: express.Response) => 
             code: code,
         });
 
-        console.log(payload);
+        logger.info(payload);
 
         const tokenResponse = await fetch('https://api.login.yahoo.com/oauth2/get_token', {
             method: 'POST',
@@ -84,13 +81,12 @@ app.post('/oauth/token', async (req: express.Request, res: express.Response) => 
         });
 
         const tokenData: TokenData = await tokenResponse.json();
-        console.log(JSON.stringify(tokenData, null, 2));
+        tokenData.expiry_server_time = Date.now() + (tokenData.expires_in || 0) * 1000;
 
         if (!tokenData?.access_token) {
             throw new Error('Failed to get access token');
         }
 
-        // TODO refresh token
         res.cookie('token', tokenData, {
             httpOnly: true,
             secure: true,
@@ -100,7 +96,7 @@ app.post('/oauth/token', async (req: express.Request, res: express.Response) => 
 
         res.json(tokenData);
     } catch (error) {
-        console.error('Token exchange error:', error);
+        logger.error('Token exchange error:', error);
         res.status(500).json({ error: 'Failed to exchange code for token' });
     }
 });
@@ -116,7 +112,7 @@ app.get('/api/standings', async (req: express.Request, res: express.Response) =>
         const standings = await yahooGateway.getStandings(req, res);
         res.json(standings);
     } catch (e) {
-        console.error('Error fetching standings:', e);
+        logger.error('Error fetching standings:', e);
         res.status(500).json({ error: 'Unexpected error', original: e });
     }
 });
@@ -135,7 +131,7 @@ app.get('/api/matchups', async (req: express.Request, res: express.Response) => 
         res.setHeader('Expires', '0');
         res.json(images);
     } catch (e) {
-        console.error('Error fetching matchups:', e);
+        logger.error('Error fetching matchups:', e);
         res.status(500).json({ error: 'Unexpected error', original: e });
     }
 });
@@ -150,7 +146,7 @@ app.get('/api/games-debug', async (req: express.Request, res: express.Response) 
         const games = await yahooGateway.getGames(req, res);
         res.json(games);
     } catch (e) {
-        console.error('Error fetching games:', e);
+        logger.error('Error fetching games:', e);
         res.status(500).json({ error: 'Unexpected error', original: e });
     }
 });
@@ -168,5 +164,5 @@ app.get('/api/generate-image', async (req: express.Request, res: express.Respons
 
 // Create HTTPS server
 https.createServer(httpsOptions, app).listen(port, () => {
-    console.log(`OAuth server running at https://localhost:${port}`);
+    logger.info(`Fantasy football server running at https://localhost:${port}`);
 });
