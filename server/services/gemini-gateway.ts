@@ -1,6 +1,7 @@
 import { GoogleGenAI, Modality, MediaResolution } from '@google/genai';
 import { TEAM_CONTEXT } from '../utils/schwifty-team-context.ts';
 import { type TransformedMatchup } from '../data-mappers.ts';
+import { logger } from './logger.ts';
 
 const IMAGE_PROMPTS = [
     "A whimsical and fantastical scene where ${personA} floats triumphantly, a glowing aura of victory surrounding them, while ${personB} sits defeated amidst wilted flowers under a soft, glowing twilight sky. The art is in the hand-drawn Studio Ghibli style, with an air of wonder and gentle sadness. The scene is bathed in soft, ethereal light, with a single firefly landing on a defeated ${personB}'s hand.",
@@ -121,7 +122,7 @@ export class GeminiGateway {
                     teamB.description
                 );
 
-                console.log('prompt', prompt);
+                logger.info('prompt', { prompt });
 
                 const response = await this.ai.models.generateContent({
                     model: 'gemini-2.5-flash-image-preview',
@@ -170,7 +171,7 @@ export class GeminiGateway {
             teamB.description
         );
 
-        console.log('prompt', prompt);
+        logger.info('prompt', { prompt });
 
         const response = await this.ai.models.generateContent({
             model: 'gemini-2.5-flash-image-preview',

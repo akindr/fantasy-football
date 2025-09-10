@@ -1,3 +1,5 @@
+import { logger } from './services/logger.ts';
+
 export type YahooStandingsResponse = {
     fantasy_content: {
         league: Array<{
@@ -75,7 +77,6 @@ export type TransformedStandings = {
 };
 
 export function transformStandings(data: YahooStandingsResponse): TransformedStandings {
-    console.log('transformStandings', data);
     const leagueInfo = data.fantasy_content.league[0];
     const standingsInfo = data.fantasy_content.league[1];
 
@@ -221,9 +222,6 @@ export function transformMatchups(data: YahooScoreboardResponse): TransformedMat
         if (!team1Data || !team2Data) {
             continue;
         }
-
-        console.log('team1Data', team1Data);
-        console.log('team2Data', team2Data);
 
         // Team 1 information - following the Python array indexing
         const team1Name = (team1Data[0] as any)?.[2]?.name || '';
