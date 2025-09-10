@@ -113,7 +113,7 @@ app.get('/api/standings', async (req: express.Request, res: express.Response) =>
     }
     try {
         // TODO specify league id and year from UI
-        const standings = await yahooGateway.getStandings(req);
+        const standings = await yahooGateway.getStandings(req, res);
         res.json(standings);
     } catch (e) {
         console.error('Error fetching standings:', e);
@@ -128,9 +128,12 @@ app.get('/api/matchups', async (req: express.Request, res: express.Response) => 
         return;
     }
     try {
-        // TODO specify league id and year from UI
-        const matchups = await yahooGateway.getMatchups(req);
-        res.json(matchups);
+        const matchups = await yahooGateway.getMatchups(req, res);
+        const images = await geminiGateway.generateAllMatchupImages(matchups);
+        res.setHeader('Cache-Control', 'no-store');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+        res.json(images);
     } catch (e) {
         console.error('Error fetching matchups:', e);
         res.status(500).json({ error: 'Unexpected error', original: e });
@@ -144,7 +147,7 @@ app.get('/api/games-debug', async (req: express.Request, res: express.Response) 
         return;
     }
     try {
-        const games = await yahooGateway.getGames(req);
+        const games = await yahooGateway.getGames(req, res);
         res.json(games);
     } catch (e) {
         console.error('Error fetching games:', e);
@@ -153,7 +156,6 @@ app.get('/api/games-debug', async (req: express.Request, res: express.Response) 
 });
 
 app.get('/api/generate-image', async (req: express.Request, res: express.Response) => {
-    console.log('Gemini gateway key', process.env.REACT_APP_GEMINI_API_KEY);
     const prompt = req.query.prompt as string;
     const imageBuffer = await geminiGateway.generateImage(prompt);
     if (!imageBuffer) {

@@ -18,9 +18,11 @@ export const ImageGen: React.FC = () => {
 
     return (
         <div className="p-4">
-            <button onClick={handleGenerateImage}>Generate Image</button>
+            <button onClick={handleGenerateImage} className="p-4 bg-off-white rounded-full">
+                Generate Image
+            </button>
             {image && (
-                <div className="mt-6">
+                <div className="mt-6 ">
                     <img src={image} alt="Generated Image" />
                 </div>
             )}
