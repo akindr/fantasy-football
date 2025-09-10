@@ -184,16 +184,18 @@ type YahooScoreboardResponse = {
     };
 };
 
-type TransformedMatchup = {
+export type TransformedMatchup = {
     team1: {
         name: string;
         logo: string;
         points: number;
+        id: string;
     };
     team2: {
         name: string;
         logo: string;
         points: number;
+        id: string;
     };
 };
 
@@ -220,14 +222,19 @@ export function transformMatchups(data: YahooScoreboardResponse): TransformedMat
             continue;
         }
 
+        console.log('team1Data', team1Data);
+        console.log('team2Data', team2Data);
+
         // Team 1 information - following the Python array indexing
         const team1Name = (team1Data[0] as any)?.[2]?.name || '';
         const team1Logo = (team1Data[0] as any)?.[5]?.team_logos?.[0]?.team_logo?.url || '';
+        const team1ID = (team1Data[0] as any)?.[1]?.team_id || '';
         const team1Points = parseFloat((team1Data[1] as TeamPoints)?.team_points?.total || '0');
 
         // Team 2 information - following the Python array indexing
         const team2Name = (team2Data[0] as any)?.[2]?.name || '';
         const team2Logo = (team2Data[0] as any)?.[5]?.team_logos?.[0]?.team_logo?.url || '';
+        const team2ID = (team2Data[0] as any)?.[1]?.team_id || '';
         const team2Points = parseFloat((team2Data[1] as TeamPoints)?.team_points?.total || '0');
 
         transformedMatchups.push({
@@ -235,11 +242,13 @@ export function transformMatchups(data: YahooScoreboardResponse): TransformedMat
                 name: team1Name,
                 logo: team1Logo,
                 points: team1Points,
+                id: team1ID,
             },
             team2: {
                 name: team2Name,
                 logo: team2Logo,
                 points: team2Points,
+                id: team2ID,
             },
         });
     }

@@ -33,7 +33,9 @@ export class YahooFantasyService {
      * @returns
      */
     async query(queryKey: string[]) {
-        const response = await this.makeRequest(`https://localhost:3001/api/${queryKey[0]}`);
+        const response = await this.makeRequest(
+            `https://localhost:3001/api/${queryKey[0]}?week=${queryKey[1]}`
+        );
         return response;
     }
 }
