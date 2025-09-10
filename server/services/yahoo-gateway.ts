@@ -44,6 +44,9 @@ export class YahooGateway {
         });
 
         const updatedTokenData: TokenData = await tokenResponse.json();
+        updatedTokenData.expiry_server_time =
+            Date.now() + (updatedTokenData.expires_in || 0) * 1000;
+
         logger.info('Refresh request token', updatedTokenData);
         res.cookie('token', updatedTokenData, {
             httpOnly: true,
