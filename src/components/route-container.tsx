@@ -23,7 +23,7 @@ export function RoutesContainer() {
     });
 
     return routeSpring((style, item) => (
-        <animated.div style={style} className="route-container">
+        <animated.div style={style} className="route-container overflow-y-auto">
             <Routes location={item}>
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Login />} />

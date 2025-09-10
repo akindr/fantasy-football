@@ -186,6 +186,7 @@ type YahooScoreboardResponse = {
 };
 
 export type TransformedMatchup = {
+    id: string;
     team1: {
         name: string;
         logo: string;
@@ -236,6 +237,7 @@ export function transformMatchups(data: YahooScoreboardResponse): TransformedMat
         const team2Points = parseFloat((team2Data[1] as TeamPoints)?.team_points?.total || '0');
 
         transformedMatchups.push({
+            id: matchupId.toString(),
             team1: {
                 name: team1Name,
                 logo: team1Logo,

@@ -83,7 +83,7 @@ export class YahooGateway {
         logger.info('Response status', { status: responseStatus });
 
         if (responseStatus === 401) {
-            throw new Error('Unauthorized, please login again');
+            await this._reauthenticate(req, res);
         } else if (responseStatus !== 200) {
             throw new Error(`Unexpected error, status: ${responseStatus}`);
         }
