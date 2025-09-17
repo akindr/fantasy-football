@@ -44,7 +44,7 @@ export const TEAM_CONTEXT = [
         id: '7',
         name: 'Mama Fredge',
         description:
-            'Shes a fierce woman who is the ruler of suburbia. She is of fair skin, thin frame, and has big cury hair. She loves to shop and take care of her kid.',
+            'Shes a fierce woman who is the ruler of suburbia. She is of fair skin, thin frame, and has really curly hair. She has one son.',
         mascot: 'A suburban mom',
     },
     {

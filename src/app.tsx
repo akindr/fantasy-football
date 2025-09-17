@@ -11,10 +11,17 @@ function App() {
             <Helmet>
                 <title>Get Schwifty Fantasy Football</title>
             </Helmet>
-            <div className="h-full w-full overflow-hidden flex flex-col">
-                <div className="bg-dark-blue flex-0">
-                    <div className="text-4xl p-4 flex flex-row">
-                        <span className="text-white">Get Scwhifty FF</span>
+            <div className="h-full w-full overflow-hidden flex flex-col text-xl dark">
+                <div className="bg-slate-900 flex-0">
+                    <div className="px-4 pb-4 pt-0.5 flex flex-row text-white font-think-loved items-end">
+                        <div
+                            className="mt-2 mr-2 w-20 h-20 rounded-full inline-block bg-cover bg-center"
+                            style={{ backgroundImage: `url('/sumologo.png')` }}
+                        />
+                        <span className="text-6xl bg-linear-to-r from-cyan-400 to-indigo-500 bg-clip-text text-transparent">
+                            Get Scwhifty
+                        </span>
+                        <span className="text-6xl">&nbsp;Football</span>
                     </div>
                     <NavigationBar />
                 </div>

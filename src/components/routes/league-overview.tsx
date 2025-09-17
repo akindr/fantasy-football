@@ -20,9 +20,8 @@ export const LeagueOverview: React.FC = () => {
     }
 
     return (
-        <div className="league-overview">
-            <h2>League Standings - {standings?.leagueName}</h2>
-            <table className="standings-table">
+        <div className="p-4">
+            <table className="table table-auto">
                 <thead>
                     <tr>
                         <th>&nbsp;</th>
@@ -37,9 +36,12 @@ export const LeagueOverview: React.FC = () => {
                 </thead>
                 <tbody>
                     {standings?.teams.map(team => (
-                        <tr key={team.teamId}>
+                        <tr key={team.teamId} className="mb-2">
                             <td>
-                                <img src={team.logoUrl} height="36" className="logo" />
+                                <img
+                                    src={team.logoUrl}
+                                    className="w-18 object-cover object-center rounded-full"
+                                />
                             </td>
                             <td>{team.rank}</td>
                             <td>{team.name}</td>
