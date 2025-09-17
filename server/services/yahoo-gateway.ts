@@ -60,7 +60,8 @@ export class YahooGateway {
         resource: string,
         leagueId: string,
         req: express.Request,
-        res: express.Response
+        res: express.Response,
+        retry: boolean = false
     ): Promise<any> => {
         const tokenData = req.cookies.token as TokenData;
         const leagueSpec = `${GAME_KEY}.l.${leagueId}`;
@@ -82,8 +83,9 @@ export class YahooGateway {
         const responseStatus = response.status;
         logger.info('Response status', { status: responseStatus });
 
-        if (responseStatus === 401) {
-            throw new Error('Unauthorized, please login again');
+        if (responseStatus === 401 && !retry) {
+            await this._reauthenticate(req, res);
+            return this._makeRequest(resource, leagueId, req, res, true);
         } else if (responseStatus !== 200) {
             throw new Error(`Unexpected error, status: ${responseStatus}`);
         }

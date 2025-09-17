@@ -1,4 +1,4 @@
-import { GoogleGenAI, Modality, MediaResolution } from '@google/genai';
+import { GoogleGenAI, Modality } from '@google/genai';
 import { TEAM_CONTEXT } from '../utils/schwifty-team-context.ts';
 import { type TransformedMatchup } from '../data-mappers.ts';
 import { logger } from './logger.ts';
@@ -133,22 +133,26 @@ export class GeminiGateway {
                 });
                 return {
                     response,
-                    teamAID: matchup.team1.id,
-                    teamBID: matchup.team2.id,
+                    matchupId: matchup.id,
                 };
             })
         );
 
-        return images.map(imageResp => {
-            for (const part of imageResp.response?.candidates?.[0]?.content?.parts ?? []) {
+        return matchups.map(matchup => {
+            const generatedImage = images.find(image => image.matchupId === matchup.id);
+
+            if (!generatedImage) {
+                return matchup;
+            }
+
+            for (const part of generatedImage.response?.candidates?.[0]?.content?.parts ?? []) {
                 if (part.inlineData) {
                     const imageData = part.inlineData.data ?? '';
                     const mimeType = part.inlineData.mimeType ?? '';
                     return {
+                        ...matchup,
                         imageData,
                         mimeType,
-                        teamAID: imageResp.teamAID,
-                        teamBID: imageResp.teamBID,
                     };
                 }
             }

@@ -126,9 +126,9 @@ app.get('/api/matchups', async (req: express.Request, res: express.Response) => 
     try {
         const matchups = await yahooGateway.getMatchups(req, res);
         const images = await geminiGateway.generateAllMatchupImages(matchups);
-        res.setHeader('Cache-Control', 'no-store');
-        res.setHeader('Pragma', 'no-cache');
-        res.setHeader('Expires', '0');
+        // res.setHeader('Cache-Control', 'no-store');
+        // res.setHeader('Pragma', 'no-cache');
+        // res.setHeader('Expires', '0');
         res.json(images);
     } catch (e) {
         logger.error('Error fetching matchups:', e);
