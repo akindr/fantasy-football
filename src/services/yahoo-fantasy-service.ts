@@ -9,8 +9,18 @@ export interface Team {
     games_behind: string;
 }
 
+function getBaseURL() {
+    return process.env.NODE_ENV === 'production'
+        ? 'https://us-central1-get-schwifty-football.cloudfunctions.net/api'
+        : 'https://localhost:3001/api';
+}
+
 export class YahooFantasyService {
-    constructor() {}
+    _baseURL: string;
+
+    constructor() {
+        this._baseURL = getBaseURL();
+    }
 
     async makeRequest(url: string, options: RequestInit = {}) {
         const response = await fetch(url, {
@@ -34,7 +44,7 @@ export class YahooFantasyService {
      */
     async query(queryKey: string[]) {
         const response = await this.makeRequest(
-            `https://localhost:3001/api/${queryKey[0]}?week=${queryKey[1]}`
+            `${this._baseURL}/${queryKey[0]}?week=${queryKey[1]}`
         );
         return response;
     }
