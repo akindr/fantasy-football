@@ -166,3 +166,6 @@ app.get('/api/generate-image', async (req: express.Request, res: express.Respons
 https.createServer(httpsOptions, app).listen(port, () => {
     logger.info(`Fantasy football server running at https://localhost:${port}`);
 });
+
+// Export for firebase useage
+export { app };

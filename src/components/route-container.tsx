@@ -8,6 +8,7 @@ import { authService } from '../services/auth-service';
 import { Home } from './routes/home';
 import { LeagueOverview } from './routes/league-overview';
 import { Matchups } from './routes/matchups';
+import { Awards } from './routes/awards';
 
 const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     return authService.isAuthenticated() ? <>{children}</> : <Navigate to="/login" />;
@@ -45,6 +46,7 @@ export function RoutesContainer() {
                         </PrivateRoute>
                     }
                 />
+                <Route path="/awards" element={<Awards />} />
             </Routes>
         </animated.div>
     ));

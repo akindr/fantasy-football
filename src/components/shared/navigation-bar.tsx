@@ -16,7 +16,7 @@ export function NavigationBar() {
             <NavLink role="button" to="/" className={buttonClassNameHelper}>
                 Home
             </NavLink>
-            <NavLink role="button" to="/standings" className={buttonClassNameHelper}>
+            {/* <NavLink role="button" to="/standings" className={buttonClassNameHelper}>
                 Standings
             </NavLink>
             <NavLink role="button" to="/matchups" className={buttonClassNameHelper}>
@@ -27,6 +27,10 @@ export function NavigationBar() {
             </NavLink>
             <NavLink role="button" to="/login" className={buttonClassNameHelper}>
                 Login
+            </NavLink>
+             */}
+            <NavLink role="button" to="/awards" className={buttonClassNameHelper}>
+                Awards
             </NavLink>
         </div>
     );
