@@ -11,7 +11,7 @@ export default defineConfig({
         outDir: 'build',
         sourcemap: true,
     },
-    envPrefix: ['REACT_APP_'],
+    envPrefix: ['FF_APP_'],
     server: {
         open: true,
         port: 3000,

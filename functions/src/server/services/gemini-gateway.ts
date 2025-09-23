@@ -77,11 +77,11 @@ const IMAGE_PROMPTS = [
 export class GeminiGateway {
     ai: GoogleGenAI;
 
-    constructor() {
-        const apiKey = process.env.REACT_APP_GEMINI_API_KEY ?? '';
+    constructor(geminiApiKey: string) {
+        const apiKey = geminiApiKey ?? '';
 
         if (!apiKey) {
-            throw new Error('REACT_APP_GEMINI_API_KEY env variable is not set');
+            throw new Error('Gemini API key is not set');
         }
         this.ai = new GoogleGenAI({ apiKey });
     }

@@ -112,3 +112,6 @@ build
 
 # firebase
 .firebase/
+
+# development env with sensitive information
+functions/.env.development

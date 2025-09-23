@@ -20,7 +20,7 @@ class AuthService {
 
     async handleCallback(code: string): Promise<string> {
         try {
-            const tokenResponse = await fetch('https://localhost:3001/oauth/token', {
+            const tokenResponse = await fetch(API_CONFIG.tokenUri, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

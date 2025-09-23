@@ -12,19 +12,21 @@ This app contains a vite-based client React application, and an express server f
 
 There are two uncomitted files needed:
 
-1. a `.env` file with the Yahoo API credentials
+1. a `functions/.env.development` file with sensitive information like Yahoo client secrets, etc...
 1. a localhost SSL certificate
 
 ### Yahoo API Credentials
 
-Create a .env file with the following information:
+Create the `functions/.env.development` file with the following information:
 
 ```lang=bash
-REACT_APP_YAHOO_CLIENT_ID=<CLIENT_ID_HERE>
-REACT_APP_YAHOO_CLIENT_SECRET=<CLIENT_SECRET_HERE>
+FF_APP_YAHOO_CLIENT_ID=dj0yJmk9YmNKWjZlVENQQlRmJmQ9WVdrOVZHRkxUbXQxTTFjbWNHbzlNQT09JnM9Y29uc3VtZXJzZWNyZXQmc3Y9MCZ4PTI1
+FF_APP_YAHOO_CLIENT_SECRET=<SECRET HERE>
+FF_APP_YAHOO_AUTH_REDIRECT_URL=https://localhost:3000/auth/callback
+FF_APP_GEMINI_API_KEY=<SECRET HERE>
 ```
 
-You can find these in the Yahoo developer documentation: https://developer.yahoo.com/apps/
+You can find these in the Yahoo developer documentation: https://developer.yahoo.com/apps/ and the Gemini documentation: https://aistudio.google.com/apikey
 
 ### Local SSL certificate
 
@@ -86,4 +88,28 @@ The React query setup will use the right URL depending on runtime env.
 
 # Deployment
 
-_TBD_
+## Firebase Setup
+
+### Secrets & Params
+
+There are a few secrets required:
+
+- YAHOO_CLIENT_ID
+- YAHOO_CLIENT_SECRET
+- GEMINI_API_KEY
+
+These are regular parameters:
+
+- YAHOO_AUTH_REDIRECT_URL
+
+The `YAHOO_AUTH_REDIRECT_URL` should be `https://getschwiftyff.com/auth/callback`
+
+#### Updating the values
+
+For secrets, enter this command then set the value:
+
+```
+firebase functions:secrets:set GEMINI_API_KEY
+```
+
+For params, it'll prompt you the first time and then create a `.env.get-schwifty-football` file entry under the `functions` dir.

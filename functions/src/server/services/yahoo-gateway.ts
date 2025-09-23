@@ -9,27 +9,24 @@ import { type TokenData } from '../types';
 import { GAME_KEY, SCHWIFTY_LEAGUE_ID } from '../constants';
 import { logger } from './logger';
 
-export const REDIRECT_URI =
-    process.env.NODE_ENV === 'production'
-        ? 'https://us-central1-get-schwifty-football.cloudfunctions.net/auth/callback'
-        : 'https://localhost:3000/auth/callback';
-
 export class YahooGateway {
     private clientId: string;
     private clientSecret: string;
+    private redirectUri: string;
 
-    constructor(clientId: string, clientSecret: string) {
+    constructor(clientId: string, clientSecret: string, redirectUri: string) {
         logger.info('YahooGateway constructor', { clientId, clientSecret });
         this.clientId = clientId;
         this.clientSecret = clientSecret;
+        this.redirectUri = redirectUri;
     }
 
     _reauthenticate = async (req: express.Request, res: express.Response) => {
-        const tokenData = req.cookies.token as TokenData;
+        const tokenData = req.cookies.__session as TokenData;
 
         const refreshParams = {
             grant_type: 'refresh_token',
-            redirect_uri: 'https://localhost:3000/auth/callback',
+            redirect_uri: this.redirectUri,
             refresh_token: tokenData.refresh_token || '',
             client_secret: this.clientSecret || '',
             client_id: this.clientId || '',
@@ -53,7 +50,7 @@ export class YahooGateway {
             Date.now() + (updatedTokenData.expires_in || 0) * 1000;
 
         logger.info('Refresh request token', updatedTokenData);
-        res.cookie('token', updatedTokenData, {
+        res.cookie('__session', updatedTokenData, {
             httpOnly: true,
             secure: true,
             maxAge: 1000 * 60 * 60 * 24 * 1, // 1 days
@@ -68,7 +65,7 @@ export class YahooGateway {
         res: express.Response,
         retry: boolean = false
     ): Promise<any> => {
-        const tokenData = req.cookies.token as TokenData;
+        const tokenData = req.cookies.__session as TokenData;
         const leagueSpec = `${GAME_KEY}.l.${leagueId}`;
 
         if (tokenData.expiry_server_time && Date.now() >= tokenData.expiry_server_time) {
@@ -131,7 +128,7 @@ export class YahooGateway {
     }
 
     async getGames(req: express.Request, res: express.Response) {
-        const tokenData = req.cookies.token as TokenData;
+        const tokenData = req.cookies.__session as TokenData;
 
         const response = await fetch(
             'https://fantasysports.yahooapis.com/fantasy/v2/game/nfl?format=json',
