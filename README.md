@@ -78,6 +78,12 @@ npm run dev-server
 npm run dev-client
 ```
 
+### Local server notes
+
+In production, we use Firebase functions to host the express app. Rather than use the local emulator, we just use express directly over HTTPS. This is to account for the Yahoo API restrictions around OAuth. **TLDR;** Yahoo will only do the token callback if it is over HTTPS. Thus, just use the express server directly.
+
+The React query setup will use the right URL depending on runtime env.
+
 # Deployment
 
 _TBD_

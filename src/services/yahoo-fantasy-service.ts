@@ -9,6 +9,7 @@ export interface Team {
     games_behind: string;
 }
 
+// TODO - make this actually work
 function getBaseURL() {
     return process.env.NODE_ENV === 'production'
         ? 'https://us-central1-get-schwifty-football.cloudfunctions.net/api'

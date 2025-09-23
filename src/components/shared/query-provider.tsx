@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider, QueryFunction } from '@tanstack/react
 import { yahooFantasyService } from '../../services/yahoo-fantasy-service';
 
 const makeRequest: QueryFunction = async ({ queryKey }) => {
+    // todo - this is just a generic api not yahoo
     return yahooFantasyService.query(queryKey as string[]);
 };
 
