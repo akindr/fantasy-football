@@ -14,10 +14,11 @@ function getApp(
     yahooClientId: string,
     yahooClientSecret: string,
     yahooRedirectUri: string,
+    geminiApiKey: string,
     prefix: string = ''
 ) {
     const app = express();
-    const geminiGateway = new GeminiGateway();
+    const geminiGateway = new GeminiGateway(geminiApiKey);
     const yahooGateway = new YahooGateway(yahooClientId, yahooClientSecret, yahooRedirectUri);
 
     // CORS configuration
@@ -38,7 +39,7 @@ function getApp(
     app.use(cookieParser());
 
     // TODO move into gateway
-    app.post('/oauth/token', async (req: express.Request, res: express.Response) => {
+    app.post(`${prefix}/oauth/token`, async (req: express.Request, res: express.Response) => {
         try {
             const { code } = req.body;
             logger.info('Requesting token', { code, redirectUri: yahooRedirectUri });
@@ -70,7 +71,8 @@ function getApp(
                 throw new Error('Failed to get access token');
             }
 
-            res.cookie('token', tokenData, {
+            // Note this is a special-sauce cookie that Firebase won't strip
+            res.cookie('__session', tokenData, {
                 httpOnly: true,
                 secure: true,
                 maxAge: 1000 * 60 * 60 * 24 * 1, // 1 days
@@ -86,7 +88,8 @@ function getApp(
 
     // Proxy to get standings for the FF league
     app.get(`${prefix}/standings`, async (req: express.Request, res: express.Response) => {
-        if (!req.cookies.token) {
+        logger.info('Fetching standings', req.cookies);
+        if (!req.cookies.__session) {
             res.status(401).json({ error: 'Unauthorized' });
             return;
         }
@@ -102,7 +105,7 @@ function getApp(
 
     // Proxy to get matchups for the FF league
     app.get(`${prefix}/matchups`, async (req: express.Request, res: express.Response) => {
-        if (!req.cookies.token) {
+        if (!req.cookies.__session) {
             res.status(401).json({ error: 'Unauthorized' });
             return;
         }
@@ -121,7 +124,7 @@ function getApp(
 
     // Debug endpoint to get available NFL games
     app.get(`${prefix}/games-debug`, async (req: express.Request, res: express.Response) => {
-        if (!req.cookies.token) {
+        if (!req.cookies.__session) {
             res.status(401).json({ error: 'Unauthorized' });
             return;
         }

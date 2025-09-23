@@ -18,7 +18,13 @@ let app: any = null;
 
 function createAppWithSecrets() {
     if (!app) {
-        app = getApp(yahooClientId.value(), yahooClientSecret.value(), yahooRedirectUri.value());
+        app = getApp(
+            yahooClientId.value(),
+            yahooClientSecret.value(),
+            yahooRedirectUri.value(),
+            geminiApiKey.value(),
+            '/api'
+        );
     }
     return app;
 }

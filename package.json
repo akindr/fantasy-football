@@ -45,7 +45,7 @@
         "dev": "concurrently \"npm run start\" \"npm run dev-server\"",
         "debug": "node --inspect --loader ts-node/esm functions/src/server/server.ts",
         "server-emulate": "firebase emulators:start",
-        "deploy": "firebase deploy",
+        "deploy": "npm run build && firebase deploy",
         "deploy-functions": "firebase deploy --only functions",
         "deploy-hosting": "firebase deploy --only hosting"
     },

@@ -12,19 +12,21 @@ This app contains a vite-based client React application, and an express server f
 
 There are two uncomitted files needed:
 
-1. a `.env` file with the Yahoo API credentials
+1. a `functions/.env.development` file with sensitive information like Yahoo client secrets, etc...
 1. a localhost SSL certificate
 
 ### Yahoo API Credentials
 
-Create a .env file with the following information:
+Create the `functions/.env.development` file with the following information:
 
 ```lang=bash
-FF_APP_YAHOO_CLIENT_ID=<CLIENT_ID_HERE>
-FF_APP_YAHOO_CLIENT_SECRET=<CLIENT_SECRET_HERE>
+FF_APP_YAHOO_CLIENT_ID=dj0yJmk9YmNKWjZlVENQQlRmJmQ9WVdrOVZHRkxUbXQxTTFjbWNHbzlNQT09JnM9Y29uc3VtZXJzZWNyZXQmc3Y9MCZ4PTI1
+FF_APP_YAHOO_CLIENT_SECRET=<SECRET HERE>
+FF_APP_YAHOO_AUTH_REDIRECT_URL=https://localhost:3000/auth/callback
+FF_APP_GEMINI_API_KEY=<SECRET HERE>
 ```
 
-You can find these in the Yahoo developer documentation: https://developer.yahoo.com/apps/
+You can find these in the Yahoo developer documentation: https://developer.yahoo.com/apps/ and the Gemini documentation: https://aistudio.google.com/apikey
 
 ### Local SSL certificate
 

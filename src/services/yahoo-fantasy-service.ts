@@ -1,3 +1,5 @@
+import { API_CONFIG } from '../config';
+
 export interface Team {
     team_id: string;
     name: string;
@@ -9,18 +11,11 @@ export interface Team {
     games_behind: string;
 }
 
-// TODO - make this actually work
-function getBaseURL() {
-    return process.env.NODE_ENV === 'production'
-        ? 'https://us-central1-get-schwifty-football.cloudfunctions.net/api'
-        : 'https://localhost:3001/api';
-}
-
 export class YahooFantasyService {
     _baseURL: string;
 
     constructor() {
-        this._baseURL = getBaseURL();
+        this._baseURL = API_CONFIG.apiUri;
     }
 
     async makeRequest(url: string, options: RequestInit = {}) {
