@@ -1,5 +1,3 @@
-import { logger } from './services/logger.ts';
-
 export type YahooStandingsResponse = {
     fantasy_content: {
         league: Array<{
@@ -17,18 +15,6 @@ export type YahooStandingsResponse = {
             }>;
         }>;
     };
-};
-
-type TeamInfo = {
-    team_key: string;
-    team_id: string;
-    name: string;
-    team_logos: Array<{
-        team_logo: {
-            size: string;
-            url: string;
-        };
-    }>;
 };
 
 type TeamPoints = {

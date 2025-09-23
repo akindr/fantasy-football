@@ -39,10 +39,12 @@
         "build": "vite build",
         "preview": "vite preview",
         "start-server": "node server/dist/server.js",
-        "dev-server": "nodemon server/server.ts",
-        "server": "cd server && node server.ts",
+        "dev-server": "nodemon functions/src/server/server.ts",
+        "server": "node functions/src/server/server.ts",
         "dev": "concurrently \"npm run start\" \"npm run dev-server\"",
-        "debug": "node --inspect --loader ts-node/esm server/server.ts"
+        "debug": "node --inspect --loader ts-node/esm functions/src/server/server.ts",
+        "server-emulate": "firebase emulators:start",
+        "deploy": "firebase deploy"
     },
     "eslintConfig": {
         "extends": [

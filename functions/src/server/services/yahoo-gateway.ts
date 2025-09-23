@@ -3,11 +3,16 @@ import {
     transformMatchups,
     transformStandings,
     type YahooStandingsResponse,
-} from '../data-mappers.ts';
+} from '../data-mappers';
 
-import { type TokenData } from '../server.ts';
-import { GAME_KEY, SCHWIFTY_LEAGUE_ID } from '../constants.ts';
-import { logger } from './logger.ts';
+import { type TokenData } from '../types';
+import { GAME_KEY, SCHWIFTY_LEAGUE_ID } from '../constants';
+import { logger } from './logger';
+
+export const REDIRECT_URI =
+    process.env.NODE_ENV === 'production'
+        ? 'https://us-central1-get-schwifty-football.cloudfunctions.net/auth/callback'
+        : 'https://localhost:3000/auth/callback';
 
 export class YahooGateway {
     private clientId: string;
@@ -43,7 +48,7 @@ export class YahooGateway {
             body: payload,
         });
 
-        const updatedTokenData: TokenData = await tokenResponse.json();
+        const updatedTokenData = (await tokenResponse.json()) as TokenData;
         updatedTokenData.expiry_server_time =
             Date.now() + (updatedTokenData.expires_in || 0) * 1000;
 

@@ -9,6 +9,7 @@ lerna-debug.log*
 secrets.yaml
 
 # local certs
+server/.cert
 .cert
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
