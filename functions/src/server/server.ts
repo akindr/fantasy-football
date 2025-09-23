@@ -3,6 +3,10 @@ import fs from 'fs';
 import path from 'path';
 import { logger } from './services/logger';
 import { getApp } from './app';
+import dotenv from 'dotenv';
+
+// Contains our local env variables for secrets and things that should not be committed
+dotenv.config({ path: path.join(__dirname, '../../.env.development') });
 
 const port = 3001;
 
@@ -14,7 +18,7 @@ const httpsOptions = {
 
 const clientId = process.env.FF_APP_YAHOO_CLIENT_ID || '';
 const clientSecret = process.env.FF_APP_YAHOO_CLIENT_SECRET || '';
-const redirectUri = process.env.FF_APP_YAHOO_AUTH_REDIRECT_URL || 'localhost:3000';
+const redirectUri = process.env.FF_APP_YAHOO_AUTH_REDIRECT_URL || '';
 
 const app = getApp(clientId, clientSecret, redirectUri, '/api');
 
