@@ -9,19 +9,16 @@ import { type TokenData } from '../types';
 import { GAME_KEY, SCHWIFTY_LEAGUE_ID } from '../constants';
 import { logger } from './logger';
 
-export const REDIRECT_URI =
-    process.env.NODE_ENV === 'production'
-        ? 'https://us-central1-get-schwifty-football.cloudfunctions.net/auth/callback'
-        : 'https://localhost:3000/auth/callback';
-
 export class YahooGateway {
     private clientId: string;
     private clientSecret: string;
+    private redirectUri: string;
 
-    constructor(clientId: string, clientSecret: string) {
+    constructor(clientId: string, clientSecret: string, redirectUri: string) {
         logger.info('YahooGateway constructor', { clientId, clientSecret });
         this.clientId = clientId;
         this.clientSecret = clientSecret;
+        this.redirectUri = redirectUri;
     }
 
     _reauthenticate = async (req: express.Request, res: express.Response) => {
@@ -29,7 +26,7 @@ export class YahooGateway {
 
         const refreshParams = {
             grant_type: 'refresh_token',
-            redirect_uri: 'https://localhost:3000/auth/callback',
+            redirect_uri: this.redirectUri,
             refresh_token: tokenData.refresh_token || '',
             client_secret: this.clientSecret || '',
             client_id: this.clientId || '',

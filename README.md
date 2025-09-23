@@ -20,8 +20,8 @@ There are two uncomitted files needed:
 Create a .env file with the following information:
 
 ```lang=bash
-REACT_APP_YAHOO_CLIENT_ID=<CLIENT_ID_HERE>
-REACT_APP_YAHOO_CLIENT_SECRET=<CLIENT_SECRET_HERE>
+FF_APP_YAHOO_CLIENT_ID=<CLIENT_ID_HERE>
+FF_APP_YAHOO_CLIENT_SECRET=<CLIENT_SECRET_HERE>
 ```
 
 You can find these in the Yahoo developer documentation: https://developer.yahoo.com/apps/
@@ -86,4 +86,28 @@ The React query setup will use the right URL depending on runtime env.
 
 # Deployment
 
-_TBD_
+## Firebase Setup
+
+### Secrets & Params
+
+There are a few secrets required:
+
+- YAHOO_CLIENT_ID
+- YAHOO_CLIENT_SECRET
+- GEMINI_API_KEY
+
+These are regular parameters:
+
+- YAHOO_AUTH_REDIRECT_URL
+
+The `YAHOO_AUTH_REDIRECT_URL` should be `https://getschwiftyff.com/auth/callback`
+
+#### Updating the values
+
+For secrets, enter this command then set the value:
+
+```
+firebase functions:secrets:set GEMINI_API_KEY
+```
+
+For params, it'll prompt you the first time and then create a `.env.get-schwifty-football` file entry under the `functions` dir.

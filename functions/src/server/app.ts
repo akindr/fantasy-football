@@ -4,16 +4,21 @@ import fetch from 'node-fetch';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import { GeminiGateway } from './services/gemini-gateway';
-import { REDIRECT_URI, YahooGateway } from './services/yahoo-gateway';
+import { YahooGateway } from './services/yahoo-gateway';
 import { logger } from './services/logger';
 import { type TokenData } from './types';
 
 dotenv.config();
 
-function getApp(yahooClientId: string, yahooClientSecret: string, prefix: string = '') {
+function getApp(
+    yahooClientId: string,
+    yahooClientSecret: string,
+    yahooRedirectUri: string,
+    prefix: string = ''
+) {
     const app = express();
     const geminiGateway = new GeminiGateway();
-    const yahooGateway = new YahooGateway(yahooClientId, yahooClientSecret);
+    const yahooGateway = new YahooGateway(yahooClientId, yahooClientSecret, yahooRedirectUri);
 
     // CORS configuration
     app.use(
@@ -36,12 +41,11 @@ function getApp(yahooClientId: string, yahooClientSecret: string, prefix: string
     app.post('/oauth/token', async (req: express.Request, res: express.Response) => {
         try {
             const { code } = req.body;
-            logger.info('Requesting token', { code, redirectUri: REDIRECT_URI });
+            logger.info('Requesting token', { code, redirectUri: yahooRedirectUri });
 
             const payload = new URLSearchParams({
                 grant_type: 'authorization_code',
-                // TODO - prod auth callback
-                redirect_uri: REDIRECT_URI,
+                redirect_uri: yahooRedirectUri,
                 client_id: yahooClientId,
                 client_secret: yahooClientSecret,
                 code: code,
