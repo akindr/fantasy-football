@@ -7,8 +7,8 @@ import { ImageGen } from './routes/image-gen';
 import { authService } from '../services/auth-service';
 import { Home } from './routes/home';
 import { LeagueOverview } from './routes/league-overview';
-import { Matchups } from './routes/matchups';
 import { Awards } from './routes/awards';
+import { AwardsSlides } from './routes/awards-slides';
 
 const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     return authService.isAuthenticated() ? <>{children}</> : <Navigate to="/login" />;
@@ -42,11 +42,11 @@ export function RoutesContainer() {
                     path="/matchups"
                     element={
                         <PrivateRoute>
-                            <Matchups />
+                            <Awards />
                         </PrivateRoute>
                     }
                 />
-                <Route path="/awards" element={<Awards />} />
+                <Route path="/awards" element={<AwardsSlides />} />
             </Routes>
         </animated.div>
     ));

@@ -111,7 +111,9 @@ function getApp(
         }
         try {
             const matchups = await yahooGateway.getMatchups(req, res);
-            const images = await geminiGateway.generateAllMatchupImages(matchups);
+            const images = matchups;
+            // DO NOT UNCOMMENT, shit is expensive
+            // await geminiGateway.generateAllMatchupImages(matchups);
             // res.setHeader('Cache-Control', 'no-store');
             // res.setHeader('Pragma', 'no-cache');
             // res.setHeader('Expires', '0');
