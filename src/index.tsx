@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { QueryProvider } from './components/shared/query-provider';
 import App from './app';
 import reportWebVitals from './reportWebVitals';
+import './services/firebase';
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(

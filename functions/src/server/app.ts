@@ -9,6 +9,7 @@ import { YahooGateway } from './services/yahoo-gateway';
 import { logger } from './services/logger';
 import { type TokenData } from './types';
 import { DatabaseService } from './services/database-service';
+import { firebaseAuthMiddleware } from './auth-middleware';
 
 dotenv.config();
 
@@ -154,7 +155,7 @@ function getApp(
         res.send(imageBuffer);
     });
 
-    app.post(`${prefix}/data/awards`, async (req: express.Request, res: express.Response) => {
+    app.post(`${prefix}/data/awards`, firebaseAuthMiddleware, async (req: express.Request, res: express.Response) => {
         try {
             const { week, matchup, imageURL, team1, team2, title, description, matchupHighlights } = req.body;
             if (week === undefined || matchup === undefined) {

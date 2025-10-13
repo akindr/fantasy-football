@@ -10,3 +10,13 @@ export const API_CONFIG = {
     tokenUri: TOKEN_URI,
     apiUri: BASE_URL,
 };
+
+// TODO: Replace with your app's Firebase project configuration
+export const FIREBASE_CONFIG = {
+    apiKey: "your-api-key",
+    authDomain: "your-auth-domain",
+    projectId: "your-project-id",
+    storageBucket: "your-storage-bucket",
+    messagingSenderId: "your-messaging-sender-id",
+    appId: "your-app-id"
+};
