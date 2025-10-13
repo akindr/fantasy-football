@@ -1,4 +1,3 @@
-
 import express from 'express';
 import cors from 'cors';
 import fetch from 'node-fetch';
@@ -9,6 +8,7 @@ import { YahooGateway } from './services/yahoo-gateway';
 import { logger } from './services/logger';
 import { type TokenData } from './types';
 import { DatabaseService } from './services/database-service';
+import { firebaseAuthMiddleware } from './auth-middleware';
 
 dotenv.config();
 
@@ -17,12 +17,13 @@ function getApp(
     yahooClientSecret: string,
     yahooRedirectUri: string,
     geminiApiKey: string,
-    prefix: string = ''
+    prefix: string = '',
+    startDatabase: boolean = false
 ) {
     const app = express();
     const geminiGateway = new GeminiGateway(geminiApiKey);
     const yahooGateway = new YahooGateway(yahooClientId, yahooClientSecret, yahooRedirectUri);
-    const databaseService = new DatabaseService(logger);
+    const databaseService = new DatabaseService(startDatabase);
 
     // CORS configuration
     app.use(
@@ -154,37 +155,61 @@ function getApp(
         res.send(imageBuffer);
     });
 
-    app.post(`${prefix}/data/awards`, async (req: express.Request, res: express.Response) => {
-        try {
-            const { week, matchup, imageURL, team1, team2, title, description, matchupHighlights } = req.body;
-            if (week === undefined || matchup === undefined) {
-                res.status(400).json({ error: 'week and matchup are required in the request body' });
-                return;
+    app.post(
+        `${prefix}/data/awards`,
+        firebaseAuthMiddleware,
+        async (req: express.Request, res: express.Response) => {
+            try {
+                const {
+                    week,
+                    matchup,
+                    imageURL,
+                    team1,
+                    team2,
+                    title,
+                    description,
+                    matchupHighlights,
+                } = req.body;
+                if (week === undefined || matchup === undefined) {
+                    res.status(400).json({
+                        error: 'week and matchup are required in the request body',
+                    });
+                    return;
+                }
+
+                const awardData = {
+                    imageURL,
+                    team1,
+                    team2,
+                    title,
+                    description,
+                    matchupHighlights,
+                };
+
+                if (
+                    !awardData.imageURL ||
+                    !awardData.team1 ||
+                    !awardData.team2 ||
+                    !awardData.title ||
+                    !awardData.description ||
+                    !awardData.matchupHighlights
+                ) {
+                    res.status(400).json({
+                        error: 'Request body is missing one or more required fields for award data: imageURL, team1, team2, title, description, matchupHighlights',
+                    });
+                    return;
+                }
+
+                const collection = 'awards';
+                const doc = `week-${week}-matchup-${matchup}`;
+                await databaseService.set(collection, doc, awardData);
+                res.status(200).send({ success: true });
+            } catch (e) {
+                logger.error('Error writing to database:', e);
+                res.status(500).json({ error: 'Unexpected error', original: e });
             }
-    
-            const awardData = {
-                imageURL,
-                team1,
-                team2,
-                title,
-                description,
-                matchupHighlights
-            };
-    
-            if (!awardData.imageURL || !awardData.team1 || !awardData.team2 || !awardData.title || !awardData.description || !awardData.matchupHighlights) {
-                res.status(400).json({ error: 'Request body is missing one or more required fields for award data: imageURL, team1, team2, title, description, matchupHighlights' });
-                return;
-            }
-    
-            const collection = 'awards';
-            const doc = `week-${week}-matchup-${matchup}`;
-            await databaseService.set(collection, doc, awardData);
-            res.status(200).send({ success: true });
-        } catch (e) {
-            logger.error('Error writing to database:', e);
-            res.status(500).json({ error: 'Unexpected error', original: e });
         }
-    });
+    );
 
     app.get(`${prefix}/data/awards`, async (req: express.Request, res: express.Response) => {
         try {

@@ -10,3 +10,14 @@ export const API_CONFIG = {
     tokenUri: TOKEN_URI,
     apiUri: BASE_URL,
 };
+
+// Firebase project configuration
+export const FIREBASE_CONFIG = {
+    apiKey: 'AIzaSyB4XElhJ27VYZraSGBbKCIiKh9KW8BB7DQ',
+    authDomain: 'get-schwifty-football.firebaseapp.com',
+    projectId: 'get-schwifty-football',
+    storageBucket: 'get-schwifty-football.firebasestorage.app',
+    messagingSenderId: '834189261083',
+    appId: '1:834189261083:web:0b8fe7d90a834bb0513bbe',
+    measurementId: 'G-6WP9814QH3',
+};

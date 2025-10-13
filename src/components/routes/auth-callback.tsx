@@ -16,7 +16,7 @@ export const AuthCallback: React.FC = () => {
             }
 
             try {
-                await authService.handleCallback(code);
+                await authService.handleYahooCallback(code);
                 navigate('/');
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Authentication failed');
