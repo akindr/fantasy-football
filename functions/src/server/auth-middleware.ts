@@ -1,13 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { auth } from 'firebase-admin';
+import { defineSecret } from 'firebase-functions/params';
+
 import { logger } from './services/logger';
 
-// The ALLOWED_UID is set as a secret in Firebase.
-const { ALLOWED_UID } = process.env;
-
-if (!ALLOWED_UID) {
-    logger.warn('ALLOWED_UID secret not set. Admin routes will be inaccessible.');
-}
+let ALLOWED_UID: string | null = null;
 
 export const firebaseAuthMiddleware = async (req: Request, res: Response, next: NextFunction) => {
     const authorization = req.headers.authorization;
@@ -23,6 +20,15 @@ export const firebaseAuthMiddleware = async (req: Request, res: Response, next: 
     try {
         const decodedToken = await auth().verifyIdToken(idToken);
         const uid = decodedToken.uid;
+
+        if (!ALLOWED_UID) {
+            // check env then firebase
+            ALLOWED_UID = process.env.FF_APP_ALLOWED_UID || '';
+            if (!ALLOWED_UID) {
+                const alloweUidSecret = defineSecret('ALLOWED_UID');
+                ALLOWED_UID = alloweUidSecret.value();
+            }
+        }
 
         if (uid !== ALLOWED_UID) {
             logger.warn(`User with UID ${uid} tried to access an admin route.`);

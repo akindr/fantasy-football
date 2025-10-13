@@ -94,9 +94,10 @@ The React query setup will use the right URL depending on runtime env.
 
 There are a few secrets required:
 
-- YAHOO_CLIENT_ID
-- YAHOO_CLIENT_SECRET
-- GEMINI_API_KEY
+- YAHOO_CLIENT_ID: The client ID for the yahoo app
+- YAHOO_CLIENT_SECRET: The client secret for the yahoo app
+- GEMINI_API_KEY: API key to talk to Gemini
+- ALLOWED_UID: Allowed user IDs from firebase auth who are admins
 
 These are regular parameters:
 
