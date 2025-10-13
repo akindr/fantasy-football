@@ -1,5 +1,5 @@
-import { GoogleAuthProvider, signInWithPopup, User } from "firebase/auth";
-import { auth } from "./firebase";
+import { GoogleAuthProvider, signInWithPopup, User } from 'firebase/auth';
+import { auth } from './firebase';
 
 class GoogleAuthService {
     private static readonly USER_KEY = 'firebase_user';
@@ -11,12 +11,12 @@ class GoogleAuthService {
             localStorage.setItem(GoogleAuthService.USER_KEY, JSON.stringify(result.user));
             return result.user;
         } catch (error) {
-            console.error("Google sign-in error", error);
+            console.error('Google sign-in error', error);
             throw error;
         }
     }
 
-    async getIdToken(): Promise<string | null> {
+    async getIdToken(): Promise<string | null | undefined> {
         const user = this.getUser();
         if (!user) {
             return null;

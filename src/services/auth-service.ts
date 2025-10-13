@@ -1,6 +1,6 @@
-import { yahooAuthService } from "./yahoo-auth-service";
-import { googleAuthService } from "./google-auth-service";
-import { User } from "firebase/auth";
+import { yahooAuthService } from './yahoo-auth-service';
+import { googleAuthService } from './google-auth-service';
+import { User } from 'firebase/auth';
 
 class AuthService {
     // Delegating to YahooAuthService
@@ -27,7 +27,7 @@ class AuthService {
 
     // Combined authentication check
     isAuthenticated(): boolean {
-        return yahooAuthService.isAuthenticated() || googleAuthService.isAuthenticated();
+        return yahooAuthService.isAuthenticated();
     }
 
     // Combined logout

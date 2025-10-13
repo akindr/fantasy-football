@@ -14,7 +14,7 @@ export const Login: React.FC = () => {
             await authService.loginWithGoogle();
             navigate('/'); // Redirect to home page after login
         } catch (error) {
-            console.error("Google login failed", error);
+            console.error('Google login failed', error);
             // Optionally, show an error message to the user
         }
     };
@@ -23,13 +23,13 @@ export const Login: React.FC = () => {
         <div className="p-4 flex flex-col items-start">
             <p className="mb-4">Please log in to continue:</p>
             <button
-                className="button rounded-full px-5 py-2 cursor-pointer transition-colors bg-turq mb-4"
+                className="button rounded-full px-5 py-2 cursor-pointer transition-colors bg-purple-500 mb-4 text-white"
                 onClick={handleYahooLogin}
             >
                 Login with Yahoo
             </button>
             <button
-                className="button rounded-full px-5 py-2 cursor-pointer transition-colors bg-red-500 text-white"
+                className="button rounded-full px-5 py-2 cursor-pointer transition-colors bg-blue-500 text-white"
                 onClick={handleGoogleLogin}
             >
                 Login with Google

@@ -11,12 +11,13 @@ export const API_CONFIG = {
     apiUri: BASE_URL,
 };
 
-// TODO: Replace with your app's Firebase project configuration
+// Firebase project configuration
 export const FIREBASE_CONFIG = {
-    apiKey: "your-api-key",
-    authDomain: "your-auth-domain",
-    projectId: "your-project-id",
-    storageBucket: "your-storage-bucket",
-    messagingSenderId: "your-messaging-sender-id",
-    appId: "your-app-id"
+    apiKey: 'AIzaSyB4XElhJ27VYZraSGBbKCIiKh9KW8BB7DQ',
+    authDomain: 'get-schwifty-football.firebaseapp.com',
+    projectId: 'get-schwifty-football',
+    storageBucket: 'get-schwifty-football.firebasestorage.app',
+    messagingSenderId: '834189261083',
+    appId: '1:834189261083:web:0b8fe7d90a834bb0513bbe',
+    measurementId: 'G-6WP9814QH3',
 };
