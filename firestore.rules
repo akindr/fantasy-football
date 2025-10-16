@@ -1,0 +1,32 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user has admin claim
+    function isAdmin() {
+      return request.auth != null 
+        && request.auth.token.admin == true;
+    }
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Awards collection
+    // - Anyone can read awards (public)
+    // - Only admins can write/update/delete awards
+    match /awards/{document=**} {
+      allow read: if true;  // Public read access
+      allow write, update, delete: if isAdmin();
+    }
+    
+    // Default deny all other collections
+    // Add more collection rules here as needed
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
