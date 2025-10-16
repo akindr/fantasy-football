@@ -1,17 +1,21 @@
 import { Request, Response, NextFunction } from 'express';
 import { auth } from 'firebase-admin';
-import { defineSecret } from 'firebase-functions/params';
 
 import { logger } from './services/logger';
 
-let ALLOWED_UID: string | null = null;
-
+/**
+ * Middleware to verify Firebase ID token and check for admin claim.
+ *
+ * This uses Firebase Custom Claims to determine if a user is an admin.
+ * Admin claims must be set using the setup script: npm run set-admin -- YOUR_UID
+ *
+ * See: functions/scripts/set-first-admin.ts
+ */
 export const firebaseAuthMiddleware = async (req: Request, res: Response, next: NextFunction) => {
     const authorization = req.headers.authorization;
 
     if (!authorization || !authorization.startsWith('Bearer ')) {
         res.status(401).send('Unauthorized');
-        next();
         return;
     }
 
@@ -19,31 +23,20 @@ export const firebaseAuthMiddleware = async (req: Request, res: Response, next: 
 
     try {
         const decodedToken = await auth().verifyIdToken(idToken);
-        const uid = decodedToken.uid;
 
-        if (!ALLOWED_UID) {
-            // check env then firebase
-            ALLOWED_UID = process.env.FF_APP_ALLOWED_UID || '';
-            if (!ALLOWED_UID) {
-                const alloweUidSecret = defineSecret('ALLOWED_UID');
-                ALLOWED_UID = alloweUidSecret.value();
-            }
-        }
-
-        if (uid !== ALLOWED_UID) {
-            logger.warn(`User with UID ${uid} tried to access an admin route.`);
-            res.status(403).send('Forbidden');
-            next();
+        // Check if user has admin claim
+        if (!decodedToken.admin) {
+            logger.warn(
+                `User with UID ${decodedToken.uid} tried to access admin route without admin claim.`
+            );
+            res.status(403).send('Forbidden - Admin access required');
             return;
         }
 
         (req as any).user = decodedToken;
         next();
-        return;
     } catch (error) {
         logger.error('Error verifying Firebase ID token:', error);
         res.status(401).send('Unauthorized');
-        next();
-        return;
     }
 };

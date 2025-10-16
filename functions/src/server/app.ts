@@ -9,6 +9,7 @@ import { logger } from './services/logger';
 import { type TokenData } from './types';
 import { DatabaseService } from './services/database-service';
 import { firebaseAuthMiddleware } from './auth-middleware';
+import { adminRouter } from './admin-routes';
 
 dotenv.config();
 
@@ -231,6 +232,9 @@ function getApp(
             res.status(500).json({ error: 'Unexpected error', original: e });
         }
     });
+
+    // Mount admin routes
+    app.use(`${prefix}/admin`, adminRouter);
 
     return app;
 }
