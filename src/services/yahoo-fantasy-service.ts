@@ -1,4 +1,5 @@
 import { API_CONFIG } from '../config';
+import { googleAuthService } from './google-auth-service';
 
 export interface Team {
     team_id: string;
@@ -19,8 +20,19 @@ export class YahooFantasyService {
     }
 
     async makeRequest(url: string, options: RequestInit = {}) {
+        const idToken = await googleAuthService.getIdToken();
+
+        const headers: Record<string, string> = {
+            ...(options.headers as Record<string, string>),
+        };
+
+        if (idToken) {
+            headers['Authorization'] = `Bearer ${idToken}`;
+        }
+
         const response = await fetch(url, {
             ...options,
+            headers,
             credentials: 'include',
         });
         if (!response.ok) {
