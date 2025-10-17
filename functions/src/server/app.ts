@@ -18,13 +18,12 @@ function getApp(
     yahooClientSecret: string,
     yahooRedirectUri: string,
     geminiApiKey: string,
-    prefix: string = '',
-    startDatabase: boolean = false
+    prefix: string = ''
 ) {
     const app = express();
     const geminiGateway = new GeminiGateway(geminiApiKey);
     const yahooGateway = new YahooGateway(yahooClientId, yahooClientSecret, yahooRedirectUri);
-    const databaseService = new DatabaseService(startDatabase);
+    const databaseService = new DatabaseService();
 
     // CORS configuration
     app.use(
