@@ -1,0 +1,157 @@
+/**
+ * OPTIONAL: Direct Firestore Access Service
+ * 
+ * This is an example of how you could access Firestore directly from the client
+ * for better performance, especially for public reads.
+ * 
+ * Benefits:
+ * - Faster (no API server hop)
+ * - Real-time updates with onSnapshot
+ * - Offline support
+ * - Lower cost (no Cloud Functions invocations)
+ * 
+ * Your current API approach works great too! This is just an alternative.
+ * 
+ * To use this:
+ * 1. Rename this file to firestore-service.ts
+ * 2. Install Firestore: npm install firebase (already installed)
+ * 3. Import and use in your components
+ */
+
+import { 
+    getFirestore, 
+    collection, 
+    doc, 
+    getDoc, 
+    setDoc, 
+    query, 
+    where,
+    onSnapshot,
+    Unsubscribe 
+} from 'firebase/firestore';
+import { app } from './firebase';
+
+const db = getFirestore(app);
+
+export interface AwardData {
+    imageURL: string;
+    team1: string;
+    team2: string;
+    title: string;
+    description: string;
+    matchupHighlights: any;
+}
+
+/**
+ * Get a specific award from Firestore
+ * This is a public read - no authentication required
+ */
+export async function getAward(week: number, matchup: number): Promise<AwardData | null> {
+    try {
+        const docRef = doc(db, 'awards', `week-${week}-matchup-${matchup}`);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+            return docSnap.data() as AwardData;
+        }
+        return null;
+    } catch (error) {
+        console.error('Error getting award:', error);
+        throw error;
+    }
+}
+
+/**
+ * Set/update an award in Firestore
+ * Requires admin authentication - Firestore rules will check custom claims
+ * 
+ * User must be logged in and have admin claim set
+ */
+export async function setAward(
+    week: number, 
+    matchup: number, 
+    data: AwardData
+): Promise<void> {
+    try {
+        const docRef = doc(db, 'awards', `week-${week}-matchup-${matchup}`);
+        await setDoc(docRef, data);
+    } catch (error) {
+        console.error('Error setting award:', error);
+        // If error.code === 'permission-denied', user doesn't have admin claim
+        throw error;
+    }
+}
+
+/**
+ * Listen to real-time updates for an award
+ * Returns an unsubscribe function
+ * 
+ * Example usage:
+ * const unsubscribe = subscribeToAward(1, 1, (award) => {
+ *   console.log('Award updated:', award);
+ * });
+ * 
+ * // Later, stop listening:
+ * unsubscribe();
+ */
+export function subscribeToAward(
+    week: number,
+    matchup: number,
+    callback: (award: AwardData | null) => void
+): Unsubscribe {
+    const docRef = doc(db, 'awards', `week-${week}-matchup-${matchup}`);
+    
+    return onSnapshot(docRef, (docSnap) => {
+        if (docSnap.exists()) {
+            callback(docSnap.data() as AwardData);
+        } else {
+            callback(null);
+        }
+    }, (error) => {
+        console.error('Error listening to award:', error);
+    });
+}
+
+/**
+ * Get all awards for a specific week
+ */
+export async function getAwardsByWeek(week: number): Promise<AwardData[]> {
+    try {
+        // Note: This requires a query, which might need a Firestore index
+        // You could also structure documents differently to make this easier
+        const awardsRef = collection(db, 'awards');
+        const q = query(awardsRef, where('week', '==', week));
+        
+        // For now, you might want to fetch all and filter client-side
+        // or continue using your API endpoint for this
+        
+        throw new Error('Not implemented - use API endpoint for listing');
+    } catch (error) {
+        console.error('Error getting awards by week:', error);
+        throw error;
+    }
+}
+
+// Example React component usage:
+/*
+import { useEffect, useState } from 'react';
+import { getAward, subscribeToAward } from '../services/firestore-service';
+
+function AwardDisplay({ week, matchup }) {
+    const [award, setAward] = useState(null);
+    
+    // Option 1: One-time fetch
+    useEffect(() => {
+        getAward(week, matchup).then(setAward);
+    }, [week, matchup]);
+    
+    // Option 2: Real-time updates
+    useEffect(() => {
+        const unsubscribe = subscribeToAward(week, matchup, setAward);
+        return unsubscribe; // Cleanup on unmount
+    }, [week, matchup]);
+    
+    return <div>{award?.title}</div>;
+}
+*/
+
