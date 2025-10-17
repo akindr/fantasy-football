@@ -31,8 +31,7 @@ function createAppWithSecrets() {
             yahooClientSecret.value(),
             yahooRedirectUri.value(),
             geminiApiKey.value(),
-            '/api',
-            true
+            '/api'
         );
     }
     return app;

@@ -38,7 +38,7 @@ const clientSecret = process.env.FF_APP_YAHOO_CLIENT_SECRET || '';
 const redirectUri = process.env.FF_APP_YAHOO_AUTH_REDIRECT_URL || '';
 const geminiApiKey = process.env.FF_APP_GEMINI_API_KEY || '';
 
-const app = getApp(clientId, clientSecret, redirectUri, geminiApiKey, '/api', false);
+const app = getApp(clientId, clientSecret, redirectUri, geminiApiKey, '/api');
 
 // Create HTTPS server
 https.createServer(httpsOptions, app).listen(port, () => {
