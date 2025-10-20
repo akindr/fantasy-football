@@ -74,6 +74,7 @@ const IMAGE_PROMPTS = [
     'A retro, classic video game-style scene of a victorious ${personA} with a triumphant pixelated pose, while a defeated ${personB} is shown with a defeated expression. The art is in a simple, low-resolution 8-bit or 16-bit style, with limited colors and a focus on simple, readable sprites. The mood is nostalgic and energetic, like a classic side-scrolling video game.',
 ];
 
+// TODO: Prompt tuning for getting the matchup info - DO NOT hallucinate
 export class GeminiGateway {
     ai: GoogleGenAI;
 
