@@ -207,7 +207,7 @@ type YahooRosterData = {
 
 type YahooRosterResponse = {
     fantasy_content: {
-        team: Array<Array<any> | { roster: { [key: string]: { players: YahooRosterData } } }>;
+        team: Array<Array<unknown> | { roster: { [key: string]: { players: YahooRosterData } } }>;
     };
 };
 
@@ -222,10 +222,14 @@ export type TransformedPlayer = {
     uniformNumber?: string;
     isUndroppable: boolean;
     selectedPosition: string;
+    stats?: TransformedPlayerStats;
 };
 
 export type TransformedPlayerStats = {
-    stats: any;
+    stats: Array<{
+        statId: string;
+        value: string;
+    }>;
     points: string;
 };
 

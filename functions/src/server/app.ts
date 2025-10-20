@@ -115,13 +115,13 @@ function getApp(
         }
         try {
             const matchups = await yahooGateway.getMatchups(req, res);
-            const images = matchups;
+            // const images = matchups;
             // DO NOT UNCOMMENT, shit is expensive
             // await geminiGateway.generateAllMatchupImages(matchups);
             // res.setHeader('Cache-Control', 'no-store');
             // res.setHeader('Pragma', 'no-cache');
             // res.setHeader('Expires', '0');
-            res.json(images);
+            res.json(matchups);
         } catch (e) {
             logger.error('Error fetching matchups:', e);
             res.status(500).json({ error: 'Unexpected error', original: e });
@@ -206,6 +206,68 @@ function getApp(
                 res.status(200).send({ success: true });
             } catch (e) {
                 logger.error('Error writing to database:', e);
+                res.status(500).json({ error: 'Unexpected error', original: e });
+            }
+        }
+    );
+
+    app.get(
+        `${prefix}/admin/insights`,
+        firebaseAuthMiddleware,
+        async (req: express.Request, res: express.Response) => {
+            try {
+                /* TODO: We need to do the following:
+                1. Get the entire scoreboard for the CURRENT year.
+                2. Get the same data for previous seasons (there should be 5+). Not every team will be there, so we need to match on team ID
+                Rivalry calculation
+                Metric,Calculation,Insight
+Overall Record,Total Wins - Total Losses (Head-to-Head only),Who has the historical edge?
+Win Percentage,Wins / Total Matchups,A more standard comparison for an uneven number of games.
+Average Margin,Average of (Winner's Score - Loser's Score),"The typical ""blowout"" factor in their games."
+Worst Beatdown,The largest single-game point differential.,Defines the ultimate low point for the losing team and the trash-talk gold for the winner.
+Max Win Streak,Longest consecutive wins by either manager.,Highlights periods of dominance for one side.
+Clutch Record,Record in playoff/championship matchups (if applicable).,Who performs under pressure?
+Average Score,Average Points For (PF) in all matchups.,Who generally scores better when they play each other?
+                
+                4. Player-centric. We need for EVERY SINGLE team, EACH week to get the positional data. Then we can calculate
+
+                Metric,Data Needed,Insight
+Positional Dominance,"Average total fantasy points scored by a position group (e.g., RB, WR, QB) in all head-to-head games.","Does Team A consistently win the RB battle against Team B, even if they lose the overall matchup?"
+"""Benched"" Player Points",Sum of points from starting players vs. sum of points from players on the bench who were available to play.,Did one manager lose because they benched a player who outperformed a starter in that specific rivalry game?
+"The ""Nemesis"" Player",Identify a player on one team who had their best historical performance against the other team.,"""He always kills us!""—validate the urban legend of a specific player dominating the rivalry."
+"The ""Flop"" Player",Identify a player on one team who had their worst historical performance against the other team.,Highlights a player that consistently underperforms when the rivalry heat is on.
+
+
+                */
+                const { matchup } = req.query;
+                if (!matchup) {
+                    res.status(400).json({ error: 'matchup is required query parameter' });
+                    return;
+                }
+                res.json({
+                    insights: [
+                        { category: 'Win Percentage', data: 'Tingleberries wins 75% of the time' },
+                        {
+                            category: 'Average Margin',
+                            data: 'Tingleberries average margin is 10 points',
+                        },
+                        {
+                            category: 'Worst Beatdown',
+                            data: 'Tingleberries worst beatdown was 30 points',
+                        },
+                        {
+                            category: 'Max Win Streak',
+                            data: 'Tingleberries max win streak was 5 games',
+                        },
+                        { category: 'Clutch Record', data: 'Tingleberries clutch record is 3-1' },
+                        {
+                            category: 'Average Score',
+                            data: 'Tingleberries average score is 100 points',
+                        },
+                    ],
+                });
+            } catch (e) {
+                logger.error('Error getting insights:', e);
                 res.status(500).json({ error: 'Unexpected error', original: e });
             }
         }
