@@ -123,19 +123,6 @@ export class YahooGateway {
         return response.json();
     }
 
-    // async getAllMatchupsForTeams(
-    //     req: express.Request,
-    //     res: express.Response,
-    //     team1Id: string,
-    //     team2Id: string
-    // ) {
-    //     const leagueId = SCHWIFTY_LEAGUE_ID;
-    //     const leagueSpec = `${GAME_KEY}.l.${leagueId}`;
-    //     const url = getUrl(`league/${leagueSpec}/scoreboard;week=${week}`);
-    //     const response = await this._makeRequest(url, req, res);
-    //     return response;
-    // }
-
     async getMatchups(req: express.Request, res: express.Response) {
         const leagueId = SCHWIFTY_LEAGUE_ID;
         const week = req.query.week as string;
@@ -242,17 +229,6 @@ export class YahooGateway {
         return response;
     }
 
-    /*
-    old league keys
-
-    449_33497 - 2024
-    423_222924 - 2023
-    414_682279 - 2022
-    406_54533 - 2021
-    399_461078 - 2020
-    390_1095795 - 2019
-    */
-
     async getLeague(req: express.Request, res: express.Response) {
         const allMatchups = [];
 
@@ -265,16 +241,13 @@ export class YahooGateway {
             allMatchups.push(response);
         }
 
-        // To throttle, let's batch per season
-
         const allMatchupsResults = await Promise.all(allMatchups);
         const matchupsByYear = allMatchupsResults.map(result => transformMatchups(result));
         return matchupsByYear;
     }
 
+    // For now, unexposed. We can expose again if necessary. This helps get every matchup for each week of our league's history
     async getAllMatchups(req: express.Request, res: express.Response): Promise<HistoricalData> {
-        // DEBUG FLAG - Set to true to write historical data to JSON file
-
         const dataFilePath = path.join(__dirname, '../../../../data/historical-matchups.json');
 
         // Fetch fresh data from Yahoo API
@@ -309,7 +282,6 @@ export class YahooGateway {
             };
         }
 
-        // Write to JSON file if debug flag is enabled
         try {
             // Ensure directory exists
             const dataDir = path.dirname(dataFilePath);
