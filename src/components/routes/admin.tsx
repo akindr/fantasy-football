@@ -27,6 +27,10 @@ export const Admin: React.FC = () => {
     const [week, setWeek] = useState(1);
     const [selectedMatchupIndex, setSelectedMatchupIndex] = useState(0);
     const [insights, setInsights] = useState<string>('');
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
 
     const {
         data: matchups,
@@ -109,7 +113,7 @@ export const Admin: React.FC = () => {
         const awardData = {
             week,
             matchup: selectedMatchupIndex + 1,
-            imageURL: `data:${selected.mimeType};base64,${selected.imageData}`,
+            imageURL: uploadedImageUrl,
             team1: {
                 name: selected.team1.name,
                 logo: selected.team1.logo,
@@ -122,6 +126,7 @@ export const Admin: React.FC = () => {
             },
             title,
             description,
+            matchupHighlights: 'TODO', // TODO use gemini or something to add highlights. IDK if I want this
         } as const;
 
         // @ts-expect-error server typing TBD
@@ -153,6 +158,52 @@ export const Admin: React.FC = () => {
             }
         );
         console.log(leagueDebugData);
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setSelectedFile(file);
+            // Create preview
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleImageUpload = async () => {
+        if (!selectedFile) {
+            return;
+        }
+
+        setIsUploading(true);
+        try {
+            const formData = new FormData();
+            formData.append('image', selectedFile);
+
+            const idToken = await googleAuthService.getIdToken();
+            const response = await fetch(`${API_CONFIG.apiUri}/upload/image`, {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${idToken}`,
+                },
+                body: formData,
+            });
+
+            if (!response.ok) {
+                throw new Error('Upload failed');
+            }
+
+            const data = await response.json();
+            setUploadedImageUrl(data.url);
+            console.log('Image uploaded successfully:', data);
+        } catch (error) {
+            console.error('Error uploading image:', error);
+        } finally {
+            setIsUploading(false);
+        }
     };
     if (isVerifying) {
         return (
@@ -201,7 +252,44 @@ export const Admin: React.FC = () => {
                             />
                         </div>
 
+                        <div>
+                            <label htmlFor="image" className="block font-medium mb-2">
+                                Upload Image
+                            </label>
+                            <input
+                                id="image"
+                                type="file"
+                                accept="image/*"
+                                onChange={handleFileChange}
+                                className="w-full px-3 py-2 bg-slate-600 text-white rounded border border-slate-500 focus:outline-none focus:border-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+                            />
+                            {imagePreview && (
+                                <div className="mt-2">
+                                    <img
+                                        src={imagePreview}
+                                        alt="Preview"
+                                        className="max-w-xs max-h-48 rounded border border-slate-500"
+                                    />
+                                </div>
+                            )}
+                            {uploadedImageUrl && (
+                                <div className="mt-2 p-2 bg-green-900 rounded text-sm">
+                                    <p className="font-semibold text-green-300">
+                                        Uploaded successfully!
+                                    </p>
+                                    <p className="text-green-200 break-all">{uploadedImageUrl}</p>
+                                </div>
+                            )}
+                        </div>
+
                         <div className="flex flex-row gap-2">
+                            <Button
+                                type="button"
+                                disabled={isUploading || !selectedFile}
+                                onClick={handleImageUpload}
+                            >
+                                {isUploading ? 'Uploading...' : 'Upload Image'}
+                            </Button>
                             <Button
                                 type="submit"
                                 disabled={createAwardMutation.isPending}

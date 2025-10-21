@@ -3,11 +3,13 @@ import cors from 'cors';
 import fetch from 'node-fetch';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
+import multer from 'multer';
 import { GeminiGateway } from './services/gemini-gateway';
 import { HistoricalYearData, YahooGateway } from './services/yahoo-gateway';
 import { logger } from './services/logger';
 import { type TokenData } from './types';
 import { DatabaseService } from './services/database-service';
+import { StorageService } from './services/storage-service';
 import { firebaseAuthMiddleware } from './auth-middleware';
 import { adminRouter } from './admin-routes';
 import { LEAGUE_YEARS } from './constants';
@@ -25,6 +27,23 @@ function getApp(
     const geminiGateway = new GeminiGateway(geminiApiKey);
     const yahooGateway = new YahooGateway(yahooClientId, yahooClientSecret, yahooRedirectUri);
     const databaseService = new DatabaseService();
+    const storageService = new StorageService();
+
+    // Multer configuration for file uploads (store in memory)
+    const upload = multer({
+        storage: multer.memoryStorage(),
+        limits: {
+            fileSize: 5 * 1024 * 1024, // 5MB limit
+        },
+        fileFilter: (req, file, cb) => {
+            // Only allow image files
+            if (file.mimetype.startsWith('image/')) {
+                cb(null, true);
+            } else {
+                cb(new Error('Only image files are allowed'));
+            }
+        },
+    });
 
     // CORS configuration
     app.use(
@@ -169,6 +188,47 @@ function getApp(
         res.type('image/png');
         res.send(imageBuffer);
     });
+
+    // Image upload endpoint
+    app.post(
+        `${prefix}/upload/image`,
+        firebaseAuthMiddleware,
+        upload.single('image'),
+        async (req: express.Request, res: express.Response) => {
+            try {
+                if (!req.file) {
+                    res.status(400).json({ error: 'No file uploaded' });
+                    return;
+                }
+
+                // Generate a unique filename
+                const timestamp = Date.now();
+                const fileExtension = req.file.originalname.split('.').pop();
+                const fileName = `award-images/${timestamp}.${fileExtension}`;
+
+                // Upload to Firebase Storage
+                const publicUrl = await storageService.uploadFile(
+                    req.file.buffer,
+                    fileName,
+                    req.file.mimetype
+                );
+
+                logger.info('Image uploaded successfully', { fileName, publicUrl });
+
+                res.json({
+                    success: true,
+                    url: publicUrl,
+                    fileName,
+                });
+            } catch (error) {
+                logger.error('Error uploading image:', error);
+                res.status(500).json({
+                    error: 'Failed to upload image',
+                    details: error instanceof Error ? error.message : 'Unknown error',
+                });
+            }
+        }
+    );
 
     app.post(
         `${prefix}/data/awards`,
