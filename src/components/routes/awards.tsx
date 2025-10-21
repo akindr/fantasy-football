@@ -7,6 +7,8 @@ type MatchupResponse = {
     mimeType: string;
 } & TransformedMatchup;
 
+const WEEK_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+
 export const Awards: React.FC = () => {
     const [week, setWeek] = useState<number | undefined>(undefined);
 
@@ -30,12 +32,13 @@ export const Awards: React.FC = () => {
         <div className="flex flex-col h-full">
             <div className="flex justify-between items-center flex-0 p-4">
                 <h2>League Matchups</h2>
-                {/* TODO: add weeks */}
                 <select value={week} onChange={handleWeekChange}>
                     <option value={''}>Choose a week</option>
-                    <option value={1}>Week 1</option>
-                    <option value={2}>Week 2</option>
-                    <option value={3}>Week 3</option>
+                    {WEEK_OPTIONS.map(w => (
+                        <option key={w} value={w}>
+                            Week {w}
+                        </option>
+                    ))}
                 </select>
             </div>
             {isLoading && <div>Loading matchups...</div>}

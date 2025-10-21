@@ -17,6 +17,7 @@ if (fs.existsSync(serviceAccountPath)) {
     initializeApp({
         credential: cert(serviceAccount),
         projectId: 'get-schwifty-football',
+        storageBucket: 'get-schwifty-football.firebasestorage.app',
     });
 } else {
     logger.warn('⚠️  Service account key not found. Admin endpoints will not work.');
