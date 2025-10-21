@@ -1,6 +1,6 @@
 import { GoogleGenAI, Modality } from '@google/genai';
 import { TEAM_CONTEXT } from '../utils/schwifty-team-context';
-import { type TransformedMatchup } from '../data-mappers';
+import { TeamManager, TransformedPlayer, type TransformedMatchup } from '../data-mappers';
 import { logger } from './logger';
 
 const IMAGE_PROMPTS = [
@@ -74,6 +74,19 @@ const IMAGE_PROMPTS = [
     'A retro, classic video game-style scene of a victorious ${personA} with a triumphant pixelated pose, while a defeated ${personB} is shown with a defeated expression. The art is in a simple, low-resolution 8-bit or 16-bit style, with limited colors and a focus on simple, readable sprites. The mood is nostalgic and energetic, like a classic side-scrolling video game.',
 ];
 
+export type HeadToHeadYearlyData = {
+    year: string;
+    matchups: MatchupSummary[];
+};
+
+export type MatchupSummary = {
+    id: string;
+    marginOfVictory: number;
+    winningManager: TeamManager;
+    winningTeam: string;
+    isPlayoffGame: boolean;
+} & TransformedMatchup;
+
 // TODO: Prompt tuning for getting the matchup info - DO NOT hallucinate
 export class GeminiGateway {
     ai: GoogleGenAI;
@@ -100,6 +113,66 @@ export class GeminiGateway {
             .concat(`. Some additional information about "${teamA}" is: ${teamADescription}`)
             .concat(`. Some additional information about "${teamB}" is: ${teamBDescription}`)
             .concat('. Do not include any text in the image.');
+    };
+
+    // helper to simplify the player data
+    simplifyPlayerData = (players: TransformedPlayer[]) => {
+        return players.map(player => ({
+            name: player.name,
+            position: player.position,
+            points: player.stats?.points,
+            isStarter: player.isStarter,
+        }));
+    };
+
+    getMatchupInsights = async (matchups: HeadToHeadYearlyData[]) => {
+        // Simplify the data model as much as possible for Gemini
+        matchups.forEach(yearlyMatchups => {
+            const matchups = yearlyMatchups.matchups;
+            matchups.forEach(matchup => {
+                // @ts-expect-error simply reducing the data model
+                matchup.team1.players = this.simplifyPlayerData(matchup.team1.players);
+                // @ts-expect-error simply reducing the data model
+                matchup.team2.players = this.simplifyPlayerData(matchup.team2.players);
+            });
+        });
+
+        const matchupContext = JSON.stringify(matchups);
+        const systemInstructions = `You are a Fantasy Football Analyst specializing in historical head-to-head matchups and rivalry narratives.
+            Your task is to analyze the provided JSON data, which contains the complete historical matchup results (scores, rosters, and player statistics) between two fantasy teams, and identify the top five (5) most interesting and actionable narratives or historical facts about this specific rivalry.
+
+            Analysis Criteria (Prioritize facts that align with these categories):
+            1.  **The Dominance Narrative (Streaks & Records):** Look for significant win/loss streaks (3+ games), the all-time head-to-head record, or who has a winning record in playoff/championship games.
+            2.  **The Blowout Factor:** Identify the largest margin of victory in the rivalry's history ("Worst Beatdown"). Calculate the average margin of victory for the series.
+            3.  **Positional Weakness/Strength:** Analyze weekly positional scoring (QB, RB, WR, etc.) over multiple seasons. Does one team consistently outscore the other at a specific position, regardless of the final outcome? (e.g., Team A always wins the RB score battle, but loses the WR score battle).
+            4.  **The "Nemesis" Player:** Identify an individual player (from the provided roster data) who has historically performed significantly better or worse than their season average specifically when playing this opponent.
+            5.  **The Missed Opportunity:** Identify a specific historical matchup where a manager lost despite having a superior overall team, often due to a player being left on the bench who scored more than a starter ("Bad Bench Decision").
+
+            Required Output Format: Provide exactly five (5) distinct facts, formatted as a numbered list with an insightful title for each. Each point must state the fact, the supporting data, and a brief narrative explanation.
+            `;
+
+        const userPrompt = `
+        **JSON Data:**
+        ${matchupContext}
+        `;
+
+        try {
+            const response = await this.ai.models.generateContent({
+                model: 'gemini-2.5-flash', // Good for structured analysis and speed
+                contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+                config: {
+                    systemInstruction: systemInstructions,
+                    temperature: 0.5, // Keep it slightly lower for factual analysis
+                },
+            });
+
+            logger.info('--- Gemini Analysis ---');
+            logger.info(response.text);
+            return response.text;
+        } catch (error) {
+            logger.error('Error calling Gemini API:', error);
+            return '';
+        }
     };
 
     generateAllMatchupImages = async (matchups: TransformedMatchup[]) => {

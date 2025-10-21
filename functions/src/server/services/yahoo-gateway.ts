@@ -1,5 +1,8 @@
 import express from 'express';
+import fs from 'fs';
+import path from 'path';
 import {
+    TransformedMatchup,
     transformMatchups,
     transformPlayerStats,
     transformRoster,
@@ -8,8 +11,23 @@ import {
 } from '../data-mappers';
 
 import { type TokenData } from '../types';
-import { GAME_KEY, SCHWIFTY_LEAGUE_ID } from '../constants';
+import { GAME_KEY, OLD_LEAGUE_KEYS, SCHWIFTY_LEAGUE_ID } from '../constants';
 import { logger } from './logger';
+
+export type HistoricalYearData = {
+    year: string;
+    leagueId: string;
+    gameKey: string;
+    leagueSpec: string;
+    weeklyMatchups: WeeklyMatchups[];
+};
+
+type WeeklyMatchups = {
+    week: number;
+    matchups: TransformedMatchup[];
+};
+
+export type HistoricalData = Record<string, HistoricalYearData>;
 
 const YAHOO_BASE_URL = 'https://fantasysports.yahooapis.com/fantasy/v2';
 
@@ -129,7 +147,9 @@ export class YahooGateway {
         }
 
         // Fetch all rosters in parallel
-        const rosterPromises = teamIds.map(teamId => this.getTeamPlayers(req, res, teamId, week));
+        const rosterPromises = teamIds.map(teamId =>
+            this.getTeamPlayers(req, res, teamId, week, SCHWIFTY_LEAGUE_ID, GAME_KEY)
+        );
         const rosterResults = await Promise.all(rosterPromises);
 
         // Create a map of team ID to roster data
@@ -151,19 +171,20 @@ export class YahooGateway {
         req: express.Request,
         res: express.Response,
         teamId: string,
-        week: string
+        week: string,
+        leagueId: string,
+        gameKey: string
     ) {
-        const leagueId = SCHWIFTY_LEAGUE_ID;
-        const teamKey = `${GAME_KEY}.l.${leagueId}.t.${teamId}`;
+        const teamKey = `${gameKey}.l.${leagueId}.t.${teamId}`;
 
         const url = getUrl(`team/${teamKey}/roster;week=${week}`);
         const response = await this._makeRequest(url, req, res);
         const transformedRosterData = transformRoster(response);
 
         // Next get the stats for each player via bulk api
-        const leagueKey = `${GAME_KEY}.l.${leagueId}`;
+        const leagueKey = `${gameKey}.l.${leagueId}`;
         const playersUrl = getUrl(
-            `league/${leagueKey}/players;player_keys=${transformedRosterData.map(player => `${GAME_KEY}.p.${player.playerId}`).join(',')}/stats;type=week;week=${week}`
+            `league/${leagueKey}/players;player_keys=${transformedRosterData.map(player => `${gameKey}.p.${player.playerId}`).join(',')}/stats;type=week;week=${week}`
         );
 
         // TODO this could be cleaner
@@ -173,7 +194,6 @@ export class YahooGateway {
         transformedRosterData.forEach(player => {
             const playerStats = playerStatsData.get(player.playerId);
             if (playerStats) {
-                // @ts-ignore idk what this is
                 player.stats = playerStats;
             }
         });
@@ -204,8 +224,77 @@ export class YahooGateway {
     }
 
     async getGames(req: express.Request, res: express.Response) {
-        const url = getUrl(`game/nfl?format=json`);
+        const url = getUrl(`game/nfl`);
         const response = await this._makeRequest(url, req, res);
         return response;
+    }
+
+    async getLeague(req: express.Request, res: express.Response) {
+        const allMatchups = [];
+
+        for (const year of Object.keys(OLD_LEAGUE_KEYS) as (keyof typeof OLD_LEAGUE_KEYS)[]) {
+            const leagueId = OLD_LEAGUE_KEYS[year].leagueID;
+            const gameKey = OLD_LEAGUE_KEYS[year].gameID;
+            const leagueSpec = `${gameKey}.l.${leagueId}`;
+            const url = getUrl(`league/${leagueSpec}/scoreboard;week=1`);
+            const response = await this._makeRequest(url, req, res);
+            allMatchups.push(response);
+        }
+
+        const allMatchupsResults = await Promise.all(allMatchups);
+        const matchupsByYear = allMatchupsResults.map(result => transformMatchups(result));
+        return matchupsByYear;
+    }
+
+    // For now, unexposed. We can expose again if necessary. This helps get every matchup for each week of our league's history
+    async getAllMatchups(req: express.Request, res: express.Response): Promise<HistoricalData> {
+        const dataFilePath = path.join(__dirname, '../../../../data/historical-matchups.json');
+
+        // Fetch fresh data from Yahoo API
+        logger.info('Fetching fresh matchup data from Yahoo API');
+        const weeks = Array.from({ length: 18 }, (_, i) => i + 1);
+        const historicalData: HistoricalData = {};
+
+        for (const year of Object.keys(OLD_LEAGUE_KEYS) as (keyof typeof OLD_LEAGUE_KEYS)[]) {
+            const leagueId = OLD_LEAGUE_KEYS[year].leagueID;
+            const gameKey = OLD_LEAGUE_KEYS[year].gameID;
+            const leagueSpec = `${gameKey}.l.${leagueId}`;
+            const yearMatchupRequests = [];
+
+            for (const week of weeks) {
+                const url = getUrl(`league/${leagueSpec}/scoreboard;week=${week}`);
+                const response = this._makeRequest(url, req, res);
+                yearMatchupRequests.push(response);
+            }
+            const yearMatchupResults = await Promise.all(yearMatchupRequests);
+            const transformedYearlyMatchups = yearMatchupResults.map((result, index) => ({
+                week: index + 1,
+                matchups: transformMatchups(result),
+            }));
+
+            // Prepare data for JSON file
+            historicalData[year] = {
+                year,
+                leagueId,
+                gameKey,
+                leagueSpec,
+                weeklyMatchups: transformedYearlyMatchups,
+            };
+        }
+
+        try {
+            // Ensure directory exists
+            const dataDir = path.dirname(dataFilePath);
+            if (!fs.existsSync(dataDir)) {
+                fs.mkdirSync(dataDir, { recursive: true });
+            }
+
+            fs.writeFileSync(dataFilePath, JSON.stringify(historicalData, null, 2));
+            logger.info('Historical matchup data written to JSON file');
+        } catch (error) {
+            logger.error('Error writing historical data file:', error);
+        }
+
+        return historicalData;
     }
 }

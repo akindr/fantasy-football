@@ -4,12 +4,13 @@ import fetch from 'node-fetch';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import { GeminiGateway } from './services/gemini-gateway';
-import { YahooGateway } from './services/yahoo-gateway';
+import { HistoricalYearData, YahooGateway } from './services/yahoo-gateway';
 import { logger } from './services/logger';
 import { type TokenData } from './types';
 import { DatabaseService } from './services/database-service';
 import { firebaseAuthMiddleware } from './auth-middleware';
 import { adminRouter } from './admin-routes';
+import { LEAGUE_YEARS } from './constants';
 
 dotenv.config();
 
@@ -143,6 +144,20 @@ function getApp(
         }
     });
 
+    app.get(`${prefix}/league-debug`, async (req: express.Request, res: express.Response) => {
+        if (!req.cookies.__session) {
+            res.status(401).json({ error: 'Unauthorized' });
+            return;
+        }
+        try {
+            const league = await yahooGateway.getLeague(req, res);
+            res.json(league);
+        } catch (e) {
+            logger.error('Error fetching league:', e);
+            res.status(500).json({ error: 'Unexpected error', original: e });
+        }
+    });
+
     app.get(`${prefix}/generate-image`, async (req: express.Request, res: express.Response) => {
         logger.info('Generating image', { prompt: req.query.prompt });
         const prompt = req.query.prompt as string;
@@ -216,55 +231,92 @@ function getApp(
         firebaseAuthMiddleware,
         async (req: express.Request, res: express.Response) => {
             try {
-                /* TODO: We need to do the following:
-                1. Get the entire scoreboard for the CURRENT year.
-                2. Get the same data for previous seasons (there should be 5+). Not every team will be there, so we need to match on team ID
-                Rivalry calculation
-                Metric,Calculation,Insight
-Overall Record,Total Wins - Total Losses (Head-to-Head only),Who has the historical edge?
-Win Percentage,Wins / Total Matchups,A more standard comparison for an uneven number of games.
-Average Margin,Average of (Winner's Score - Loser's Score),"The typical ""blowout"" factor in their games."
-Worst Beatdown,The largest single-game point differential.,Defines the ultimate low point for the losing team and the trash-talk gold for the winner.
-Max Win Streak,Longest consecutive wins by either manager.,Highlights periods of dominance for one side.
-Clutch Record,Record in playoff/championship matchups (if applicable).,Who performs under pressure?
-Average Score,Average Points For (PF) in all matchups.,Who generally scores better when they play each other?
-                
-                4. Player-centric. We need for EVERY SINGLE team, EACH week to get the positional data. Then we can calculate
-
-                Metric,Data Needed,Insight
-Positional Dominance,"Average total fantasy points scored by a position group (e.g., RB, WR, QB) in all head-to-head games.","Does Team A consistently win the RB battle against Team B, even if they lose the overall matchup?"
-"""Benched"" Player Points",Sum of points from starting players vs. sum of points from players on the bench who were available to play.,Did one manager lose because they benched a player who outperformed a starter in that specific rivalry game?
-"The ""Nemesis"" Player",Identify a player on one team who had their best historical performance against the other team.,"""He always kills us!""—validate the urban legend of a specific player dominating the rivalry."
-"The ""Flop"" Player",Identify a player on one team who had their worst historical performance against the other team.,Highlights a player that consistently underperforms when the rivalry heat is on.
-
-
-                */
-                const { matchup } = req.query;
-                if (!matchup) {
-                    res.status(400).json({ error: 'matchup is required query parameter' });
+                const { matchup, team1, team2 } = req.query;
+                if (!matchup || !team1 || !team2) {
+                    res.status(400).json({
+                        error: 'matchup, team1, and team2 are required query parameters',
+                    });
                     return;
                 }
+
+                const matchesFeaturingTeams = [];
+
+                for (const year of LEAGUE_YEARS) {
+                    const yearMatchups = (await databaseService.get(
+                        'historical-data',
+                        `matchups-${year}`
+                    )) as HistoricalYearData;
+
+                    const matchupsForTheYear = [];
+
+                    // Go through each week of the year and identify where these teams faced head-to-head
+                    for (let weekIdx = 0; weekIdx < yearMatchups.weeklyMatchups.length; weekIdx++) {
+                        const weekMatchups = yearMatchups.weeklyMatchups[weekIdx];
+
+                        // check each matchup for that week
+                        for (let i = 0; i < weekMatchups.matchups.length; i++) {
+                            const matchup = weekMatchups.matchups[i];
+                            if (
+                                (matchup.team1.manager.id === team1 &&
+                                    matchup.team2.manager.id === team2) ||
+                                (matchup.team1.manager.id === team2 &&
+                                    matchup.team2.manager.id === team1)
+                            ) {
+                                // Compute the winner
+                                const winner =
+                                    matchup.team1.points > matchup.team2.points
+                                        ? matchup.team1
+                                        : matchup.team2;
+                                matchupsForTheYear.push({
+                                    week: weekIdx + 1,
+                                    winningManager: winner.manager,
+                                    winningTeam: winner.name,
+                                    marginOfVictory: Math.abs(
+                                        matchup.team1.points - matchup.team2.points
+                                    ),
+                                    isPlayoffGame: weekIdx + 1 >= 14,
+                                    ...matchup,
+                                });
+                            }
+                        }
+                    }
+
+                    matchesFeaturingTeams.push({
+                        year,
+                        gameKey: yearMatchups.gameKey,
+                        leagueId: yearMatchups.leagueId,
+                        matchups: matchupsForTheYear,
+                    });
+                }
+
+                // Next, get the players per roster for each matchup
+                for (const match of matchesFeaturingTeams) {
+                    for (const matchup of match.matchups) {
+                        const team1Players = await yahooGateway.getTeamPlayers(
+                            req,
+                            res,
+                            matchup.team1.id,
+                            matchup.week.toString(),
+                            match.leagueId,
+                            match.gameKey
+                        );
+                        const team2Players = await yahooGateway.getTeamPlayers(
+                            req,
+                            res,
+                            matchup.team2.id,
+                            matchup.week.toString(),
+                            match.leagueId,
+                            match.gameKey
+                        );
+                        matchup.team1.players = team1Players;
+                        matchup.team2.players = team2Players;
+                    }
+                }
+                const insights = await geminiGateway.getMatchupInsights(matchesFeaturingTeams);
+
                 res.json({
-                    insights: [
-                        { category: 'Win Percentage', data: 'Tingleberries wins 75% of the time' },
-                        {
-                            category: 'Average Margin',
-                            data: 'Tingleberries average margin is 10 points',
-                        },
-                        {
-                            category: 'Worst Beatdown',
-                            data: 'Tingleberries worst beatdown was 30 points',
-                        },
-                        {
-                            category: 'Max Win Streak',
-                            data: 'Tingleberries max win streak was 5 games',
-                        },
-                        { category: 'Clutch Record', data: 'Tingleberries clutch record is 3-1' },
-                        {
-                            category: 'Average Score',
-                            data: 'Tingleberries average score is 100 points',
-                        },
-                    ],
+                    insights,
+                    matchesFeaturingTeams,
                 });
             } catch (e) {
                 logger.error('Error getting insights:', e);
@@ -294,6 +346,7 @@ Positional Dominance,"Average total fantasy points scored by a position group (e
         }
     });
 
+    // TODO clean this up
     // Mount admin routes
     app.use(`${prefix}/admin`, adminRouter);
 
