@@ -25,7 +25,7 @@ export const Admin: React.FC = () => {
     const [description, setDescription] = useState('');
     const [week, setWeek] = useState(1);
     const [selectedMatchupIndex, setSelectedMatchupIndex] = useState(0);
-    const [insights, setInsights] = useState<{ category: string; data: string }[]>([]);
+    const [insights, setInsights] = useState<string>('');
 
     const {
         data: matchups,
@@ -132,8 +132,11 @@ export const Admin: React.FC = () => {
     };
 
     const getMatchupInsights = async () => {
+        if (!matchups || !matchups[selectedMatchupIndex]) {
+            return;
+        }
         const insightData = await yahooFantasyService.makeRequest(
-            `${API_CONFIG.apiUri}/admin/insights?matchup=${selectedMatchupIndex + 1}`,
+            `${API_CONFIG.apiUri}/admin/insights?matchup=${selectedMatchupIndex + 1}&team1=${matchups?.[selectedMatchupIndex]?.team1.manager.id}&team2=${matchups?.[selectedMatchupIndex]?.team2.manager.id}`,
             {
                 method: 'GET',
             }
@@ -141,6 +144,15 @@ export const Admin: React.FC = () => {
         setInsights(insightData.insights);
     };
 
+    const getLeagueDebug = async () => {
+        const leagueDebugData = await yahooFantasyService.makeRequest(
+            `${API_CONFIG.apiUri}/league-debug`,
+            {
+                method: 'GET',
+            }
+        );
+        console.log(leagueDebugData);
+    };
     if (isVerifying) {
         return (
             <div className="flex items-center justify-center h-full">
@@ -199,22 +211,17 @@ export const Admin: React.FC = () => {
                             <Button type="button" onClick={getMatchupInsights}>
                                 Get Insights for Matchup
                             </Button>
+
+                            <Button type="button" onClick={getLeagueDebug}>
+                                League Debug
+                            </Button>
                         </div>
                         {createAwardMutation.isSuccess && (
                             <p className="text-green-400 text-sm">Award created successfully!</p>
                         )}
 
-                        {insights.length > 0 && (
-                            <div className="flex flex-col gap-2 bg-slate-300">
-                                {insights.map(insight => (
-                                    <div key={insight.category}>
-                                        <p className="text-lg font-medium text-black">
-                                            {insight.category}
-                                        </p>
-                                        <p className="text-sm text-gray-500">{insight.data}</p>
-                                    </div>
-                                ))}
-                            </div>
+                        {insights && (
+                            <div className="flex flex-col gap-2 bg-slate-300">{insights}</div>
                         )}
 
                         {createAwardMutation.isError && (

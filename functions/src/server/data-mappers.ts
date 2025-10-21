@@ -174,6 +174,13 @@ type YahooScoreboardResponse = {
     };
 };
 
+export type TeamManager = {
+    id: string;
+    name: string;
+    fantasyScore: number;
+    fantasyTier: string;
+};
+
 export type TransformedMatchup = {
     id: string;
     team1: {
@@ -183,6 +190,7 @@ export type TransformedMatchup = {
         pointsProjected: number;
         id: string;
         players: TransformedPlayer[];
+        manager: TeamManager;
     };
     team2: {
         name: string;
@@ -191,6 +199,7 @@ export type TransformedMatchup = {
         pointsProjected: number;
         id: string;
         players: TransformedPlayer[];
+        manager: TeamManager;
     };
 };
 
@@ -220,17 +229,17 @@ export type TransformedPlayer = {
     teamAbbr: string;
     injuryStatus?: string;
     uniformNumber?: string;
-    isUndroppable: boolean;
+    isStarter?: boolean;
     selectedPosition: string;
     stats?: TransformedPlayerStats;
 };
 
 export type TransformedPlayerStats = {
-    stats: Array<{
+    stats?: Array<{
         statId: string;
         value: string;
     }>;
-    points: string;
+    points: number;
 };
 
 export function transformRoster(data: YahooRosterResponse): TransformedPlayer[] {
@@ -259,7 +268,6 @@ export function transformRoster(data: YahooRosterResponse): TransformedPlayer[] 
                 let team = '';
                 let teamAbbr = '';
                 let uniformNumber = '';
-                let isUndroppable = false;
 
                 // Extract player information from the array
                 for (const item of playerInfo) {
@@ -284,9 +292,6 @@ export function transformRoster(data: YahooRosterResponse): TransformedPlayer[] 
                     if (item.uniform_number) {
                         uniformNumber = item.uniform_number;
                     }
-                    if (item.is_undroppable) {
-                        isUndroppable = item.is_undroppable === '1';
-                    }
                 }
 
                 // Extract selected position for this week
@@ -300,21 +305,22 @@ export function transformRoster(data: YahooRosterResponse): TransformedPlayer[] 
                     for (const posItem of posArray) {
                         if (posItem.position) {
                             selectedPosition = posItem.position;
+
                             break;
                         }
                     }
                 }
 
                 players.push({
-                    playerId,
-                    name,
-                    position,
                     headshotUrl,
+                    isStarter: selectedPosition !== 'BN',
+                    name,
+                    playerId,
+                    position,
+                    selectedPosition,
                     team,
                     teamAbbr,
                     uniformNumber,
-                    isUndroppable,
-                    selectedPosition,
                 });
             }
         }
@@ -354,6 +360,8 @@ export function transformMatchups(data: YahooScoreboardResponse): TransformedMat
         const team1PointsProjected = parseFloat(
             (team1Data[1] as TeamPoints)?.team_projected_points?.total || '0'
         );
+        // const manager = index 23, managers, manager, guid
+        const team1Manager = (team1Data[0] as Array<any>)?.[23]?.managers[0]?.manager;
 
         // Team 2 information - following the Python array indexing
         const team2Name = (team2Data[0] as any)?.[2]?.name || '';
@@ -363,6 +371,7 @@ export function transformMatchups(data: YahooScoreboardResponse): TransformedMat
         const team2PointsProjected = parseFloat(
             (team2Data[1] as TeamPoints)?.team_projected_points?.total || '0'
         );
+        const team2Manager = (team2Data[0] as Array<any>)?.[23]?.managers[0]?.manager;
 
         transformedMatchups.push({
             id: matchupId.toString(),
@@ -373,6 +382,12 @@ export function transformMatchups(data: YahooScoreboardResponse): TransformedMat
                 pointsProjected: team1PointsProjected,
                 id: team1ID,
                 players: [],
+                manager: {
+                    id: team1Manager?.guid || '',
+                    name: team1Manager?.nickname || '',
+                    fantasyScore: parseInt(team1Manager?.felo_score || '0'),
+                    fantasyTier: team1Manager?.felo_tier || '',
+                },
             },
             team2: {
                 name: team2Name,
@@ -381,6 +396,12 @@ export function transformMatchups(data: YahooScoreboardResponse): TransformedMat
                 pointsProjected: team2PointsProjected,
                 id: team2ID,
                 players: [],
+                manager: {
+                    id: team2Manager?.guid || '',
+                    name: team2Manager?.nickname || '',
+                    fantasyScore: parseInt(team2Manager?.felo_score || '0'),
+                    fantasyTier: team2Manager?.felo_tier || '',
+                },
             },
         });
     }
@@ -651,12 +672,12 @@ export function transformPlayerStats(data: any): Map<string, TransformedPlayerSt
             continue;
         }
 
-        const playerStats = player.player[1].player_stats;
+        // const playerStats = player.player[1].player_stats;
         const playerPoints = player.player[1].player_points.total;
 
         playerStatsMap.set(playerId, {
-            stats: playerStats,
-            points: playerPoints,
+            // stats: playerStats, TODO we can decode what the stats are in the future
+            points: parseFloat(playerPoints),
         });
     }
 

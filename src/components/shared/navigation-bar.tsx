@@ -39,7 +39,10 @@ export function NavigationBar() {
             {isAuthenticated ? (
                 <>
                     <span className="text-white mr-4">Welcome, {user?.displayName || 'User'}</span>
-                    <button onClick={handleLogout} className={buttonClassNameHelper({ isActive: false })}>
+                    <button
+                        onClick={handleLogout}
+                        className={buttonClassNameHelper({ isActive: false })}
+                    >
                         Logout
                     </button>
                 </>

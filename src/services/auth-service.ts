@@ -40,6 +40,10 @@ class AuthService {
         return googleAuthService.isAuthenticated();
     }
 
+    async isAdmin(): Promise<boolean> {
+        return googleAuthService.isAdmin();
+    }
+
     // Combined logout
     logout(): void {
         yahooAuthService.logout();
