@@ -374,7 +374,7 @@ export function transformMatchups(data: YahooScoreboardResponse): TransformedMat
         const team2Manager = (team2Data[0] as Array<any>)?.[23]?.managers[0]?.manager;
 
         transformedMatchups.push({
-            id: matchupId.toString(),
+            id: `${team1Manager.guid}-vs-${team2Manager.guid}`,
             team1: {
                 name: team1Name,
                 logo: team1Logo,

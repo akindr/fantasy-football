@@ -1,11 +1,8 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import type { TransformedMatchup } from '../../../functions/src/server/data-mappers';
-
-type MatchupResponse = {
-    imageData: string;
-    mimeType: string;
-} & TransformedMatchup;
+import type { Award } from '../../../../functions/src/server/types';
+import { AwardsDisplay } from './awards-display';
+import { TransformedMatchup } from '../../../../functions/src/server/data-mappers';
 
 const WEEK_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
 
@@ -13,11 +10,11 @@ export const Awards: React.FC = () => {
     const [week, setWeek] = useState<number | undefined>(undefined);
 
     const {
-        data: matchups,
+        data: awardsData,
         isLoading,
         error,
-    } = useQuery<MatchupResponse[]>({
-        queryKey: ['matchups', week],
+    } = useQuery<{ awards: Award[] }>({
+        queryKey: ['awards', week],
         refetchOnWindowFocus: false,
         enabled: () => {
             return week !== undefined;
@@ -43,73 +40,22 @@ export const Awards: React.FC = () => {
             </div>
             {isLoading && <div>Loading matchups...</div>}
             {error && <div>Error loading matchups: {error.message}</div>}
-            {matchups && <MatchupsDisplay matchups={matchups as MatchupResponse[]} />}
+            {awardsData?.awards && <AllAwardsContainer awards={awardsData?.awards} />}
         </div>
     );
 };
 
-export const MatchupsDisplay = ({ matchups }: { matchups: MatchupResponse[] }) => {
-    const [shownMatchup, setShownMatchup] = useState<number>(0);
-    const matchup = matchups[shownMatchup];
-
+export const AllAwardsContainer = ({ awards }: { awards: Award[] }) => {
     return (
-        <div
-            key={matchup.id}
-            className="flex-1 h-full w-full relative bg-black font-sink overflow-y-auto snap-y snap-mandatory"
-        >
-            <div className="absolute bottom-4 left-0 right-0 flex flex-col items-center">
-                <MatchupDetails matchup={matchup} />
-            </div>
-            <div
-                className="absolute top-1/2 left-0 bg-white/50 cursor-pointer p-3 rounded-r-full text-5xl"
-                onClick={() => setShownMatchup(Math.max(0, shownMatchup - 1))}
-            >
-                ‹
-            </div>
-            <div
-                className="absolute top-1/2 right-0 bg-white/50 cursor-pointer p-3 rounded-l-full text-5xl"
-                onClick={() => setShownMatchup(Math.min(matchups.length - 1, shownMatchup + 1))}
-            >
-                ›
-            </div>
-            <MatchupImage matchup={matchup} />
-            <MatchupPlayers matchup={matchup} />
+        <div className="flex-1 h-full w-full relative bg-black font-sink overflow-y-auto snap-y snap-mandatory">
+            {awards.map(award => (
+                <AwardsDisplay key={award.matchup.id} award={award} />
+            ))}
         </div>
     );
 };
 
-const MatchupImage = ({ matchup }: { matchup: MatchupResponse }) => {
-    return (
-        <div className="flex flex-col items-center h-full w-full snap-start">
-            <img
-                src={`data:${matchup.mimeType};base64,${matchup.imageData}`}
-                className="h-full object-cover object-center"
-            />
-        </div>
-    );
-};
-
-const MatchupDetails = ({ matchup }: { matchup: MatchupResponse }) => {
-    return (
-        <div className="flex flex-row text-xl items-center justify-center gap-5 p-4 bg-white/45 rounded-4xl">
-            <div className="flex flex-col items-center">
-                <img src={matchup.team1.logo} className="w-15 h-15 rounded-full" />
-                <span>{matchup.team1.name}</span>
-                <span className="text-6xl">{matchup.team1.points}</span>
-            </div>
-            <span className="text-4xl font-think-loved text-transparent bg-linear-45 from-cyan-600 to-violet-700 bg-clip-text">
-                VS
-            </span>
-            <div className="flex flex-col items-center">
-                <img src={matchup.team2.logo} className="w-15 h-15 rounded-full" />
-                <span>{matchup.team2.name}</span>
-                <span className="text-6xl">{matchup.team2.points}</span>
-            </div>
-        </div>
-    );
-};
-
-export const MatchupPlayers = ({ matchup }: { matchup: MatchupResponse }) => {
+export const MatchupPlayers = ({ matchup }: { matchup: TransformedMatchup }) => {
     return (
         <div className="h-full w-full p-4 snap-start bg-indigo-500/66 overflow-y-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

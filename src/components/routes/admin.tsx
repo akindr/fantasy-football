@@ -7,7 +7,7 @@ import { googleAuthService } from '../../services/google-auth-service';
 import { yahooFantasyService } from '../../services/yahoo-fantasy-service';
 import { API_CONFIG } from '../../config';
 import { TransformedMatchup } from '../../../functions/src/server/data-mappers';
-import { MatchupPlayers } from './awards';
+import { MatchupPlayers } from './awards/awards';
 import { Button } from '../shared/buttons';
 import { Insights } from '../insights';
 
@@ -29,7 +29,7 @@ export const Admin: React.FC = () => {
     const [insights, setInsights] = useState<string>('');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
-    const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
+    const [uploadedImageUrl, setUploadedImageUrl] = useState<string>('');
     const [isUploading, setIsUploading] = useState(false);
 
     const {
@@ -112,7 +112,7 @@ export const Admin: React.FC = () => {
 
         const awardData = {
             week,
-            matchup: selectedMatchupIndex + 1,
+            matchupId: selected.id,
             imageURL: uploadedImageUrl,
             team1: {
                 name: selected.team1.name,
@@ -272,14 +272,20 @@ export const Admin: React.FC = () => {
                                     />
                                 </div>
                             )}
-                            {uploadedImageUrl && (
-                                <div className="mt-2 p-2 bg-green-900 rounded text-sm">
-                                    <p className="font-semibold text-green-300">
-                                        Uploaded successfully!
-                                    </p>
-                                    <p className="text-green-200 break-all">{uploadedImageUrl}</p>
-                                </div>
-                            )}
+                            <div>
+                                <label htmlFor="title" className="block font-medium mb-2">
+                                    Image URL
+                                </label>
+                                <input
+                                    id="title"
+                                    type="text"
+                                    value={uploadedImageUrl}
+                                    onChange={e => setUploadedImageUrl(e.target.value)}
+                                    className="w-full px-3 py-2 bg-slate-600 text-white rounded border border-slate-500 focus:outline-none focus:border-blue-500"
+                                    placeholder="Enter image url"
+                                    required
+                                />
+                            </div>
                         </div>
 
                         <div className="flex flex-row gap-2">

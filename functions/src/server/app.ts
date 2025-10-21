@@ -7,7 +7,7 @@ import multer from 'multer';
 import { GeminiGateway } from './services/gemini-gateway';
 import { HistoricalYearData, YahooGateway } from './services/yahoo-gateway';
 import { logger } from './services/logger';
-import { type TokenData } from './types';
+import type { AwardData, Award, TokenData } from './types';
 import { DatabaseService } from './services/database-service';
 import { StorageService } from './services/storage-service';
 import { firebaseAuthMiddleware } from './auth-middleware';
@@ -135,15 +135,41 @@ function getApp(
         }
         try {
             const matchups = await yahooGateway.getMatchups(req, res);
-            // const images = matchups;
-            // DO NOT UNCOMMENT, shit is expensive
-            // await geminiGateway.generateAllMatchupImages(matchups);
-            // res.setHeader('Cache-Control', 'no-store');
-            // res.setHeader('Pragma', 'no-cache');
-            // res.setHeader('Expires', '0');
             res.json(matchups);
         } catch (e) {
             logger.error('Error fetching matchups:', e);
+            res.status(500).json({ error: 'Unexpected error', original: e });
+        }
+    });
+
+    app.get(`${prefix}/awards`, async (req: express.Request, res: express.Response) => {
+        if (!req.cookies.__session) {
+            res.status(401).json({ error: 'Unauthorized' });
+            return;
+        }
+        try {
+            const { week } = req.query;
+            if (!week) {
+                res.status(400).json({ error: 'week is required query parameter' });
+                return;
+            }
+            const matchups = await yahooGateway.getMatchups(req, res);
+            const awards: Award[] = [];
+
+            for (const matchup of matchups) {
+                const award = await databaseService.get(
+                    'awards',
+                    `week-${week}-matchup-${matchup.id}`
+                );
+                if (award) {
+                    logger.info('Found award', award);
+                    awards.push({ matchup, award });
+                }
+            }
+
+            res.json({ awards });
+        } catch (e) {
+            logger.error('Error fetching awards:', e);
             res.status(500).json({ error: 'Unexpected error', original: e });
         }
     });
@@ -237,15 +263,15 @@ function getApp(
             try {
                 const {
                     week,
-                    matchup,
+                    matchupId,
                     imageURL,
                     team1,
                     team2,
                     title,
                     description,
                     matchupHighlights,
-                } = req.body;
-                if (week === undefined || matchup === undefined) {
+                } = req.body as AwardData;
+                if (week === undefined || matchupId === undefined) {
                     res.status(400).json({
                         error: 'week and matchup are required in the request body',
                     });
@@ -276,7 +302,7 @@ function getApp(
                 }
 
                 const collection = 'awards';
-                const doc = `week-${week}-matchup-${matchup}`;
+                const doc = `week-${week}-matchup-${matchupId}`;
                 await databaseService.set(collection, doc, awardData);
                 res.status(200).send({ success: true });
             } catch (e) {

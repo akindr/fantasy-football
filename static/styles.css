@@ -33,6 +33,12 @@ dark blue 1D3557
     --color-bg-white: #f1faee;
 }
 
+@layer utilities {
+    .clip-polygon {
+        clip-path: polygon(0 0, 100% 0%, 86% 100%, 0 100%);
+    }
+}
+
 .route-container {
     position: absolute;
     width: 100%;
