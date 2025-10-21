@@ -9,6 +9,7 @@ import { API_CONFIG } from '../../config';
 import { TransformedMatchup } from '../../../functions/src/server/data-mappers';
 import { MatchupPlayers } from './awards';
 import { Button } from '../shared/buttons';
+import { Insights } from '../insights';
 
 const WEEK_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
 
@@ -166,13 +167,13 @@ export const Admin: React.FC = () => {
     }
 
     return (
-        <div className="p-4 text-white grid grid-cols-5 gap-4">
+        <div className="p-4 text-white grid grid-cols-5 gap-4 h-full overflow-y-auto text-base font-helvetica">
             <div className="bg-slate-800 rounded-lg p-6 mb-4 col-span-2">
-                <p className="text-gray-300 mb-4 text-2xl">Awards Creator</p>
-                <div className="my-6 p-4 bg-slate-700 rounded">
+                <h2 className="text-gray-300 mb-2 font-bold text-2xl">Awards Creator</h2>
+                <div className="p-4 bg-slate-700 rounded mb-4">
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
-                            <label htmlFor="title" className="block text-md font-medium mb-2">
+                            <label htmlFor="title" className="block font-medium mb-2">
                                 Title
                             </label>
                             <input
@@ -187,7 +188,7 @@ export const Admin: React.FC = () => {
                         </div>
 
                         <div>
-                            <label htmlFor="description" className="block text-md font-medium mb-2">
+                            <label htmlFor="description" className="block font-medium mb-2">
                                 Description
                             </label>
                             <textarea
@@ -220,10 +221,6 @@ export const Admin: React.FC = () => {
                             <p className="text-green-400 text-sm">Award created successfully!</p>
                         )}
 
-                        {insights && (
-                            <div className="flex flex-col gap-2 bg-slate-300">{insights}</div>
-                        )}
-
                         {createAwardMutation.isError && (
                             <p className="text-red-400 text-sm">
                                 Error: {createAwardMutation.error?.message}
@@ -232,7 +229,8 @@ export const Admin: React.FC = () => {
                     </form>
                 </div>
 
-                <button
+                <Button
+                    type="button"
                     onClick={async () => {
                         const idToken = await googleAuthService.getIdToken();
                         fetch(`${API_CONFIG.apiUri}/data/awards?week=1&matchup=1`, {
@@ -244,59 +242,57 @@ export const Admin: React.FC = () => {
                             .then(data => console.log(data))
                             .catch(error => console.error('Error testing admin endpoint:', error));
                     }}
-                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
                 >
                     Get Awards
-                </button>
+                </Button>
             </div>
-            <div className="bg-slate-800 rounded-lg p-6 col-span-3">
-                <div className="flex flex-col gap-3">
-                    <div className="flex flex-row items-center justify-between gap-3">
-                        <div className="flex items-center gap-2">
-                            <label htmlFor="week" className="text-lg font-medium text-gray-300">
-                                Week
-                            </label>
-                            <select
-                                id="week"
-                                value={week}
-                                onChange={handleWeekChange}
-                                className="bg-slate-700 text-white rounded px-3 py-2"
-                            >
-                                {WEEK_OPTIONS.map(w => (
-                                    <option key={w} value={w}>
-                                        Week {w}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <label htmlFor="matchup" className="text-lg font-medium text-gray-300">
-                                Matchup
-                            </label>
-                            <select
-                                id="matchup"
-                                value={selectedMatchupIndex}
-                                onChange={e => setSelectedMatchupIndex(Number(e.target.value))}
-                                className="bg-slate-700 text-white rounded px-3 py-2 w-[200px]"
-                            >
-                                {matchups?.map((m, idx) => (
-                                    <option key={m.id} value={idx}>
-                                        {m.team1.name} vs {m.team2.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+            <div className="bg-slate-800 rounded-lg p-6 col-span-3 flex flex-col gap-3 h-full overflow-y-auto">
+                <div className="flex flex-row items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                        <label htmlFor="week" className="text-lg font-medium text-gray-300">
+                            Week
+                        </label>
+                        <select
+                            id="week"
+                            value={week}
+                            onChange={handleWeekChange}
+                            className="bg-slate-700 text-white rounded px-3 py-2"
+                        >
+                            {WEEK_OPTIONS.map(w => (
+                                <option key={w} value={w}>
+                                    Week {w}
+                                </option>
+                            ))}
+                        </select>
                     </div>
-                    {isLoading && <div>Loading matchups...</div>}
-                    {error && <div>Error loading matchups: {error.message}</div>}
-                    {matchups && (
-                        <div className="h-full">
-                            <MatchupPlayers
-                                matchup={matchups[selectedMatchupIndex] as MatchupResponse}
-                            />
-                        </div>
-                    )}
+                    <div className="flex items-center gap-2">
+                        <label htmlFor="matchup" className="text-lg font-medium text-gray-300">
+                            Matchup
+                        </label>
+                        <select
+                            id="matchup"
+                            value={selectedMatchupIndex}
+                            onChange={e => setSelectedMatchupIndex(Number(e.target.value))}
+                            className="bg-slate-700 text-white rounded px-3 py-2 w-[200px]"
+                        >
+                            {matchups?.map((m, idx) => (
+                                <option key={m.id} value={idx}>
+                                    {m.team1.name} vs {m.team2.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
+                {isLoading && <div>Loading matchups...</div>}
+                {error && <div>Error loading matchups: {error.message}</div>}
+                {matchups && (
+                    <div className="h-full">
+                        <MatchupPlayers
+                            matchup={matchups[selectedMatchupIndex] as MatchupResponse}
+                        />
+                    </div>
+                )}
+                {insights && <Insights insights={insights} />}
             </div>
         </div>
     );
