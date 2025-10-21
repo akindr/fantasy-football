@@ -7,8 +7,7 @@ import { ImageGen } from './routes/image-gen';
 import { authService } from '../services/auth-service';
 import { Home } from './routes/home';
 import { LeagueOverview } from './routes/league-overview';
-import { Awards } from './routes/awards';
-import { AwardsSlides } from './routes/awards-slides';
+import { Awards } from './routes/awards/awards';
 import { Admin } from './routes/admin';
 
 const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -40,14 +39,13 @@ export function RoutesContainer() {
                     }
                 />
                 <Route
-                    path="/matchups"
+                    path="/awards"
                     element={
                         <PrivateRoute>
                             <Awards />
                         </PrivateRoute>
                     }
                 />
-                <Route path="/awards" element={<AwardsSlides />} />
                 <Route path="/admin" element={<Admin />} />
             </Routes>
         </animated.div>

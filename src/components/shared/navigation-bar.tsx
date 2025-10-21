@@ -26,12 +26,6 @@ export function NavigationBar() {
             <NavLink role="button" to="/" className={buttonClassNameHelper}>
                 Home
             </NavLink>
-            <NavLink role="button" to="/matchups" className={buttonClassNameHelper}>
-                Matchups
-            </NavLink>
-            <NavLink role="button" to="/image-gen" className={buttonClassNameHelper}>
-                Images
-            </NavLink>
             <NavLink role="button" to="/awards" className={buttonClassNameHelper}>
                 Awards
             </NavLink>
