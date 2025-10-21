@@ -239,6 +239,25 @@ function getApp(
                     return;
                 }
 
+                // First, check database if we've already given insights for these two teams
+                try {
+                    const insights = await databaseService.get(
+                        'insights',
+                        `team1-${team1}-vs-team2-${team2}`
+                    );
+                    if (insights) {
+                        logger.info('Found existing insights in database', insights);
+                        res.json(insights);
+                        return;
+                    } else {
+                        logger.info(
+                            'No insights found in database for these teams, continuing to calculate'
+                        );
+                    }
+                } catch (e) {
+                    logger.warn('Could not check database for existing insights', e);
+                }
+
                 const matchesFeaturingTeams = [];
 
                 for (const year of LEAGUE_YEARS) {
@@ -312,11 +331,16 @@ function getApp(
                         matchup.team2.players = team2Players;
                     }
                 }
+
                 const insights = await geminiGateway.getMatchupInsights(matchesFeaturingTeams);
+
+                // Persist, then we continue
+                await databaseService.set('insights', `team1-${team1}-vs-team2-${team2}`, {
+                    insights,
+                });
 
                 res.json({
                     insights,
-                    matchesFeaturingTeams,
                 });
             } catch (e) {
                 logger.error('Error getting insights:', e);
