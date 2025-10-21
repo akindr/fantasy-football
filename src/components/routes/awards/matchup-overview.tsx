@@ -9,9 +9,14 @@ export const MatchupOverview = ({ award }: { award: Award }) => {
                 src={award.award.imageURL}
                 className="w-full h-full object-contain mask-alpha mask-r-from-black mask-r-from-50% mask-r-to-transparent"
             />
-            <div className="absolute left-0 bottom-[200px] clip-polygon flex flex-col items-start bg-linear-45 from-indigo-500 from-25% to-indigo-700 to-90% pr-[100px] shadow-lg pt-6 pb-4 pl-8 max-w-[75vw] border-b-24 border-indigo-400">
-                <div className="text-6xl text-slate-100 mb-4">{award.award.title}</div>
-                <div className="text-3xl text-slate-300">{award.award.description}</div>
+            <div
+                className="absolute left-0 bottom-12 lg:bottom-[120px] clip-polygon flex flex-col items-start bg-linear-45 from-indigo-500 from-25% to-indigo-700 to-90% 
+            pr-8 py-2 pl-2 lg:pr-[100px] lg:py-6 lg:pl-8 max-w-[75vw] border-b-12 lg:border-b-24 border-indigo-400"
+            >
+                <div className="text-3xl lg:text-6xl text-slate-100 mb-1 lg:mb-4">
+                    {award.award.title}
+                </div>
+                <div className="text-2xl lg:text-3xl text-slate-300">{award.award.description}</div>
             </div>
         </>
     );
@@ -20,7 +25,7 @@ export const MatchupOverview = ({ award }: { award: Award }) => {
 export const MatchupDetails = ({ award }: { award: Award }) => {
     const { matchup } = award;
     return (
-        <div className="flex flex-row text-xl items-center justify-center gap-5 py-6 px-8">
+        <div className="flex flex-row text-xl items-center justify-center gap-5 py-2 px-4lg:py-6 lg:px-8">
             <div className="flex flex-col items-center">
                 <img src={matchup.team1.logo} className="w-15 h-15 rounded-full" />
                 <span>{matchup.team1.name}</span>

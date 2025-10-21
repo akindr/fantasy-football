@@ -37,6 +37,11 @@ dark blue 1D3557
     .clip-polygon {
         clip-path: polygon(0 0, 100% 0%, 86% 100%, 0 100%);
     }
+
+    .mask-radial-fade {
+        mask-image: radial-gradient(circle, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0) 70%);
+        -webkit-mask-image: radial-gradient(circle, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0) 70%);
+    }
 }
 
 .route-container {
