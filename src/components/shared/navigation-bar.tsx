@@ -34,7 +34,6 @@ export function NavigationBar() {
 
     return (
         <>
-            <MobileNavigationBar handleLogout={handleLogout} />
             <div className="hidden lg:flex flex-row gap-2 px-4 py-2 bg-slate-600 text-xl items-center">
                 <NavLink role="button" to="/" className={buttonClassNameHelper}>
                     Home
@@ -65,8 +64,14 @@ export function NavigationBar() {
     );
 }
 
-function MobileNavigationBar({ handleLogout }: { handleLogout: () => void }) {
+export function MobileNavigationBar() {
     const [isOpen, setIsOpen] = useState(false);
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        authService.logout();
+        navigate('/login');
+    };
 
     const handleToggle = () => {
         setIsOpen(!isOpen);
@@ -82,7 +87,7 @@ function MobileNavigationBar({ handleLogout }: { handleLogout: () => void }) {
     return (
         <>
             <div
-                className="fixed top-2 right-0 lg:hidden flex-row gap-2 px-4 py-2 text-4xl items-center text-white cursor-pointer z-50"
+                className="inline-block lg:hidden flex-row gap-2 px-4 py-2 text-3xl items-center text-white cursor-pointer z-50"
                 onClick={handleToggle}
             >
                 <GiHamburgerMenu />

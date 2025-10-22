@@ -3,10 +3,16 @@
 
 #root {
     width: 100vw;
-    height: 100vh;
+    height: 100%;
     overflow-y: auto;
     overflow-x: hidden;
     /* background-color: var(--color-bg-white); */
+}
+
+html,
+body {
+    height: 100%;
+    width: 100vw;
 }
 
 /*

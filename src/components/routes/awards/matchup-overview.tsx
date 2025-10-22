@@ -1,15 +1,32 @@
 // Shows the image and the score details
 import React from 'react';
+import { useInView, useSpring, animated } from '@react-spring/web';
+
 import { Award } from '../../../../functions/src/server/types';
 
 export const MatchupOverview = ({ award }: { award: Award }) => {
+    const [ref, isInView] = useInView({
+        rootMargin: '-10% 0px -10% 0px',
+    });
+
+    const styles = useSpring({
+        scale: isInView ? 1 : 0,
+        config: {
+            tension: 300,
+        },
+        enter: {
+            scale: 0,
+        },
+    });
     return (
         <>
             <img
                 src={award.award.imageURL}
                 className="w-full h-full object-contain mask-alpha mask-r-from-black mask-r-from-50% mask-r-to-transparent"
             />
-            <div
+            <animated.div
+                style={styles}
+                ref={ref}
                 className="absolute left-0 bottom-12 lg:bottom-[120px] clip-polygon flex flex-col items-start bg-linear-45 from-indigo-500 from-25% to-indigo-700 to-90% 
             pr-8 py-2 pl-2 lg:pr-[100px] lg:py-6 lg:pl-8 max-w-[75vw] border-b-12 lg:border-b-24 border-indigo-400"
             >
@@ -17,7 +34,7 @@ export const MatchupOverview = ({ award }: { award: Award }) => {
                     {award.award.title}
                 </div>
                 <div className="text-2xl lg:text-3xl text-slate-300">{award.award.description}</div>
-            </div>
+            </animated.div>
         </>
     );
 };
