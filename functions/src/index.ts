@@ -1,9 +1,10 @@
-import { onRequest } from 'firebase-functions/v2/https';
+import { onRequest, type Request } from 'firebase-functions/v2/https';
 import { logger, setGlobalOptions } from 'firebase-functions';
 import { defineSecret, defineString } from 'firebase-functions/params';
 import { initializeApp } from 'firebase-admin/app';
 
 import { getApp } from './server/app';
+import { uploadFile } from './file-upload';
 
 setGlobalOptions({ maxInstances: 2 });
 
@@ -37,13 +38,24 @@ function createAppWithSecrets() {
     return app;
 }
 
+// Normal API requests go through express
 exports.api = onRequest(
     {
         secrets: [yahooClientId, yahooClientSecret, geminiApiKey],
     },
-    (req, res) => {
+    (req: Request, res) => {
+        logger.info('Handling inbound request');
         const app = createAppWithSecrets();
-        logger.info('making request', { req: req.path });
         app(req, res);
+    }
+);
+
+// File uploads are a separate function
+exports.uploadFile = onRequest(
+    {
+        secrets: [yahooClientId, yahooClientSecret, geminiApiKey],
+    },
+    (req: Request, res) => {
+        uploadFile(req, res);
     }
 );

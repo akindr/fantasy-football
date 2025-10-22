@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { googleAuthService } from '../../services/google-auth-service';
 import { yahooFantasyService } from '../../services/yahoo-fantasy-service';
-import { API_CONFIG } from '../../config';
+import { API_CONFIG, BASE_URL } from '../../config';
 import { TransformedMatchup } from '../../../functions/src/server/data-mappers';
 import { MatchupPlayers } from './awards/awards';
 import { Button } from '../shared/buttons';
@@ -181,10 +181,12 @@ export const Admin: React.FC = () => {
         setIsUploading(true);
         try {
             const formData = new FormData();
-            formData.append('image', selectedFile);
+            formData.append('file', selectedFile);
 
             const idToken = await googleAuthService.getIdToken();
-            const response = await fetch(`${API_CONFIG.apiUri}/upload/image`, {
+
+            // Note this isn't on the API_URL since it's not behind the regular /api prefix
+            const response = await fetch(`${BASE_URL}uploadFile`, {
                 method: 'POST',
                 headers: {
                     Authorization: `Bearer ${idToken}`,
@@ -197,8 +199,7 @@ export const Admin: React.FC = () => {
             }
 
             const data = await response.json();
-            setUploadedImageUrl(data.url);
-            console.log('Image uploaded successfully:', data);
+            setUploadedImageUrl(data.publicUrl);
         } catch (error) {
             console.error('Error uploading image:', error);
         } finally {
@@ -327,11 +328,14 @@ export const Admin: React.FC = () => {
                     type="button"
                     onClick={async () => {
                         const idToken = await googleAuthService.getIdToken();
-                        fetch(`${API_CONFIG.apiUri}/data/awards?week=1&matchup=1`, {
-                            headers: {
-                                Authorization: `Bearer ${idToken}`,
-                            },
-                        })
+                        fetch(
+                            `${API_CONFIG.apiUri}/data/awards?week=${week}&matchup=${matchups?.[selectedMatchupIndex]?.id}`,
+                            {
+                                headers: {
+                                    Authorization: `Bearer ${idToken}`,
+                                },
+                            }
+                        )
                             .then(response => response.json())
                             .then(data => console.log(data))
                             .catch(error => console.error('Error testing admin endpoint:', error));

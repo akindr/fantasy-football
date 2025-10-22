@@ -15,7 +15,11 @@ export class StorageService {
      * @param contentType - The MIME type of the file
      * @returns The public URL of the uploaded file
      */
-    async uploadFile(file: Buffer, destination: string, contentType: string): Promise<string> {
+    uploadFile = async (
+        file: Buffer,
+        destination: string,
+        contentType: string
+    ): Promise<string> => {
         try {
             const bucketFile = this.bucket.bucket().file(destination);
 
@@ -43,7 +47,7 @@ export class StorageService {
             logger.error('Error uploading file to storage:', error);
             throw new Error('Failed to upload file');
         }
-    }
+    };
 
     /**
      * Delete a file from Firebase Storage
@@ -90,4 +94,22 @@ export class StorageService {
             return v.toString(16);
         });
     }
+
+    uploadImage = async (
+        buffer: Buffer,
+        fileName: string,
+        contentType: string
+    ): Promise<{ fileName: string; publicUrl: string }> => {
+        // Generate a unique filename
+        const timestamp = Date.now();
+        const fileExtension = fileName.split('.').pop();
+        const fullFileName = `award-images/${timestamp}.${fileExtension}`;
+
+        // Upload to Firebase Storage
+        const publicUrl = await this.uploadFile(buffer, fullFileName, contentType);
+
+        logger.info('Image uploaded successfully', { fileName, publicUrl });
+
+        return { fileName, publicUrl };
+    };
 }
