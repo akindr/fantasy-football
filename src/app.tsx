@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet';
 
 import { NavigationBar } from './components/shared/navigation-bar';
 import { RoutesContainer } from './components/route-container';
+import { MobileNavigationBar } from './components/shared/navigation-bar';
 
 function App() {
     return (
@@ -15,16 +16,19 @@ function App() {
                 <div className="bg-slate-900 flex-0">
                     <div className="px-4 pb-4 mt-4 flex flex-row text-white font-think-loved items-center">
                         <div
-                            className="mr-2 w-10 h-10 md:w-20 md:h-20 rounded-full inline-block bg-cover bg-center"
-                            style={{ backgroundImage: `url('/sumologo.png')` }}
+                            className="mr-4 w-14 h-14 md:w-20 md:h-20 inline-block bg-cover bg-center flex-shrink-0"
+                            style={{ backgroundImage: `url('/logo-header.png')` }}
                         />
-                        <span className="text-2xl md:text-4xl lg:text-6xl bg-linear-to-r from-cyan-400 to-indigo-500 bg-clip-text text-transparent">
-                            Get Scwhifty
-                        </span>
-                        <span className="block md:hidden text-2xl">&nbsp;FF</span>
-                        <span className="hidden md:block md:text-4xl lg:text-6xl">
-                            &nbsp;Football
-                        </span>
+                        <div className="flex flex-row items-center flex-grow">
+                            <span className="text-2xl md:text-4xl lg:text-6xl bg-linear-to-r from-cyan-400 to-indigo-500 bg-clip-text text-transparent">
+                                Get Scwhifty
+                            </span>
+                            <span className="block md:hidden text-2xl">&nbsp;FF</span>
+                            <span className="hidden md:block md:text-4xl lg:text-6xl">
+                                &nbsp;Football
+                            </span>
+                        </div>
+                        <MobileNavigationBar />
                     </div>
                     <NavigationBar />
                 </div>

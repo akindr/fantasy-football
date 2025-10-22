@@ -24,6 +24,7 @@ export const Admin: React.FC = () => {
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
+    const [matchupHighlights, setMatchupHighlights] = useState('');
     const [week, setWeek] = useState(1);
     const [selectedMatchupIndex, setSelectedMatchupIndex] = useState(0);
     const [insights, setInsights] = useState<string>('');
@@ -126,7 +127,7 @@ export const Admin: React.FC = () => {
             },
             title,
             description,
-            matchupHighlights: 'TODO', // TODO use gemini or something to add highlights. IDK if I want this
+            matchupHighlights,
         } as const;
 
         // @ts-expect-error server typing TBD
@@ -241,7 +242,7 @@ export const Admin: React.FC = () => {
 
                         <div>
                             <label htmlFor="description" className="block font-medium mb-2">
-                                Description
+                                Matchup Blurb
                             </label>
                             <textarea
                                 id="description"
@@ -254,49 +255,64 @@ export const Admin: React.FC = () => {
                         </div>
 
                         <div>
-                            <label htmlFor="image" className="block font-medium mb-2">
-                                Upload Image
+                            <label htmlFor="description" className="block font-medium mb-2">
+                                Matchup Highlights (md allowed)
                             </label>
-                            <input
-                                id="image"
-                                type="file"
-                                accept="image/*"
-                                onChange={handleFileChange}
-                                className="w-full px-3 py-2 bg-slate-600 text-white rounded border border-slate-500 focus:outline-none focus:border-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+                            <textarea
+                                id="matchupHighlights"
+                                value={matchupHighlights}
+                                onChange={e => setMatchupHighlights(e.target.value)}
+                                className="w-full px-3 py-2 bg-slate-600 text-white rounded border border-slate-500 focus:outline-none focus:border-blue-500 min-h-[100px]"
+                                placeholder="Enter matchup highlights"
+                                required
                             />
-                            {imagePreview && (
-                                <div className="mt-2">
-                                    <img
-                                        src={imagePreview}
-                                        alt="Preview"
-                                        className="max-w-xs max-h-48 rounded border border-slate-500"
-                                    />
-                                </div>
-                            )}
-                            <div>
-                                <label htmlFor="title" className="block font-medium mb-2">
-                                    Image URL
-                                </label>
+                        </div>
+
+                        <label htmlFor="image" className="block font-medium mb-2">
+                            Upload Image
+                        </label>
+                        <div className="flex flex-row gap-2 items-start">
+                            <div className="mx-2 flex flex-col justify-center flex-0">
                                 <input
-                                    id="title"
+                                    id="image"
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleFileChange}
+                                    className="w-full px-3 py-2 bg-slate-600 text-white rounded border border-slate-500 focus:outline-none focus:border-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+                                />
+                                {imagePreview && (
+                                    <>
+                                        <img
+                                            src={imagePreview}
+                                            alt="Preview"
+                                            className="max-w-xs max-h-48 rounded border border-slate-500"
+                                        />
+                                    </>
+                                )}
+                            </div>
+
+                            <div className="flex flex-col justify-center flex-1">
+                                <input
+                                    id="imageurl"
                                     type="text"
                                     value={uploadedImageUrl}
                                     onChange={e => setUploadedImageUrl(e.target.value)}
-                                    className="w-full px-3 py-2 bg-slate-600 text-white rounded border border-slate-500 focus:outline-none focus:border-blue-500"
+                                    className="w-full px-3 py-2 bg-slate-600 text-white rounded border border-slate-500 focus:outline-none focus:border-blue-500 mb-2"
                                     placeholder="Enter image url"
                                     required
                                 />
+
+                                <Button
+                                    type="button"
+                                    disabled={isUploading || !selectedFile}
+                                    onClick={handleImageUpload}
+                                >
+                                    {isUploading ? 'Uploading...' : 'Upload Image'}
+                                </Button>
                             </div>
                         </div>
 
                         <div className="flex flex-row gap-2">
-                            <Button
-                                type="button"
-                                disabled={isUploading || !selectedFile}
-                                onClick={handleImageUpload}
-                            >
-                                {isUploading ? 'Uploading...' : 'Upload Image'}
-                            </Button>
                             <Button
                                 type="submit"
                                 disabled={createAwardMutation.isPending}
