@@ -17,8 +17,10 @@
     "main": "dist/src/index.js",
     "dependencies": {
         "@google/genai": "^1.20.0",
+        "@types/busboy": "^1.5.4",
         "@types/json-schema": "^7.0.15",
         "@types/multer": "^2.0.0",
+        "busboy": "^1.6.0",
         "cookie-parser": "^1.4.7",
         "cors": "^2.8.5",
         "dotenv": "^16.6.1",

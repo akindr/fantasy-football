@@ -12,6 +12,10 @@
                 "function": "api"
             },
             {
+                "source": "/uploadFile",
+                "function": "uploadFile"
+            },
+            {
                 "source": "**",
                 "destination": "/index.html"
             }

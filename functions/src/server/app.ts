@@ -3,7 +3,6 @@ import cors from 'cors';
 import fetch from 'node-fetch';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
-import multer from 'multer';
 import { GeminiGateway } from './services/gemini-gateway';
 import { HistoricalYearData, YahooGateway } from './services/yahoo-gateway';
 import { logger } from './services/logger';
@@ -11,8 +10,10 @@ import type { AwardData, Award, TokenData } from './types';
 import { DatabaseService } from './services/database-service';
 import { StorageService } from './services/storage-service';
 import { firebaseAuthMiddleware } from './auth-middleware';
-import { adminRouter } from './admin-routes';
+import { multipartFormMiddleware } from './multipart-form-middleware';
+
 import { LEAGUE_YEARS } from './constants';
+import { handleMultipartUpload } from './handlers/multipart-form-handler';
 
 dotenv.config();
 
@@ -28,22 +29,6 @@ function getApp(
     const yahooGateway = new YahooGateway(yahooClientId, yahooClientSecret, yahooRedirectUri);
     const databaseService = new DatabaseService();
     const storageService = new StorageService();
-
-    // Multer configuration for file uploads (store in memory)
-    const upload = multer({
-        storage: multer.memoryStorage(),
-        limits: {
-            fileSize: 5 * 1024 * 1024, // 5MB limit
-        },
-        fileFilter: (req, file, cb) => {
-            // Only allow image files
-            if (file.mimetype.startsWith('image/')) {
-                cb(null, true);
-            } else {
-                cb(new Error('Only image files are allowed'));
-            }
-        },
-    });
 
     // CORS configuration
     app.use(
@@ -61,6 +46,7 @@ function getApp(
     // JSON + COOKIES middlewares
     app.use(express.json());
     app.use(cookieParser());
+    app.use(multipartFormMiddleware);
 
     // TODO move into gateway
     app.post(`${prefix}/oauth/token`, async (req: express.Request, res: express.Response) => {
@@ -216,35 +202,31 @@ function getApp(
     });
 
     // Image upload endpoint
+    // NOTE - this does not listen on the /api prefix because in prod, we use Firebase functions directly. This is due to how they preparse multipart form data
     app.post(
-        `${prefix}/upload/image`,
+        '/uploadFile',
         firebaseAuthMiddleware,
-        upload.single('image'),
         async (req: express.Request, res: express.Response) => {
             try {
-                if (!req.file) {
-                    res.status(400).json({ error: 'No file uploaded' });
-                    return;
+                if (
+                    !req.headers['content-type'] ||
+                    !req.headers['content-type'].startsWith('multipart/form-data')
+                ) {
+                    res.status(400).send('Expected multipart/form-data content type.');
                 }
 
-                // Generate a unique filename
-                const timestamp = Date.now();
-                const fileExtension = req.file.originalname.split('.').pop();
-                const fileName = `award-images/${timestamp}.${fileExtension}`;
-
-                // Upload to Firebase Storage
-                const publicUrl = await storageService.uploadFile(
-                    req.file.buffer,
-                    fileName,
-                    req.file.mimetype
+                // @ts-expect-error - Firebase request type is express with one extra field rawBoy
+                const { file } = await handleMultipartUpload(req);
+                const { publicUrl } = await storageService.uploadImage(
+                    file.buffer,
+                    file.name,
+                    file.mimetype
                 );
-
-                logger.info('Image uploaded successfully', { fileName, publicUrl });
 
                 res.json({
                     success: true,
-                    url: publicUrl,
-                    fileName,
+                    publicUrl,
+                    fileName: file.name,
                 });
             } catch (error) {
                 logger.error('Error uploading image:', error);
@@ -455,10 +437,6 @@ function getApp(
             res.status(500).json({ error: 'Unexpected error', original: e });
         }
     });
-
-    // TODO clean this up
-    // Mount admin routes
-    app.use(`${prefix}/admin`, adminRouter);
 
     return app;
 }
