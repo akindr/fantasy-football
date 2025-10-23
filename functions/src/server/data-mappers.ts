@@ -30,7 +30,7 @@ type TeamPoints = {
 
 type TeamStandings = {
     team_standings: {
-        rank: number;
+        rank: string;
         playoff_seed: string;
         outcome_totals: {
             wins: string;
@@ -56,12 +56,15 @@ export type TransformedStandings = {
         rank: number;
         wins: number;
         losses: number;
+        ties: number;
+        winPercentage: number;
         pointsFor: number;
         pointsAgainst: number;
         streak: {
             type: 'Win' | 'Loss';
             value: number;
         };
+        playoffSeed: number;
     }>;
 };
 
@@ -108,17 +111,23 @@ export function transformStandings(data: YahooStandingsResponse): TransformedSta
             let rank = 0,
                 wins = 0,
                 losses = 0,
+                ties = 0,
+                winPercentage = 0,
                 pointsFor = 0,
                 pointsAgainst = 0,
+                playoffSeed = 0,
                 streak = { type: 'Win' as 'Win' | 'Loss', value: 0 };
 
             if (teamStandings.team_standings) {
                 const standings = teamStandings.team_standings;
-                rank = standings.rank;
+                rank = parseInt(standings.rank);
                 wins = parseInt(standings.outcome_totals.wins);
                 losses = parseInt(standings.outcome_totals.losses);
+                ties = standings.outcome_totals.ties;
+                winPercentage = parseFloat(standings.outcome_totals.percentage);
                 pointsFor = parseFloat(standings.points_for);
                 pointsAgainst = standings.points_against;
+                playoffSeed = parseInt(standings.playoff_seed);
                 streak = {
                     type: standings.streak.type,
                     value: parseInt(standings.streak.value),
@@ -133,8 +142,11 @@ export function transformStandings(data: YahooStandingsResponse): TransformedSta
                 rank,
                 wins,
                 losses,
+                ties,
+                winPercentage,
                 pointsFor,
                 pointsAgainst,
+                playoffSeed,
                 streak,
             };
         });
@@ -143,6 +155,66 @@ export function transformStandings(data: YahooStandingsResponse): TransformedSta
         leagueName: leagueInfo.name || '',
         teams: transformedTeams,
     };
+}
+
+/**
+ * Merges standings data into matchup data.
+ * Takes matchups and standings, then adds the standings information to each team in the matchups.
+ */
+export function mergeMatchupAndStandingsData(
+    matchups: TransformedMatchup[],
+    standings: TransformedStandings
+): TransformedMatchup[] {
+    // Create a map of teamId to standings for quick lookup
+    const standingsMap = new Map(standings.teams.map(team => [team.teamId, team]));
+
+    // Iterate through each matchup and add standings data to teams
+    return matchups.map(matchup => {
+        const team1Standings = standingsMap.get(matchup.team1.id);
+        const team2Standings = standingsMap.get(matchup.team2.id);
+
+        return {
+            ...matchup,
+            team1: {
+                ...matchup.team1,
+                standings: team1Standings
+                    ? {
+                          totalPointsFor: team1Standings.pointsFor,
+                          totalPointsAgainst: team1Standings.pointsAgainst,
+                          rank: team1Standings.rank,
+                          wins: team1Standings.wins,
+                          losses: team1Standings.losses,
+                          ties: team1Standings.ties,
+                          winPercentage: team1Standings.winPercentage,
+                          streak: {
+                              type: team1Standings.streak.type,
+                              value: team1Standings.streak.value,
+                          },
+                          playoffSeed: team1Standings.playoffSeed,
+                      }
+                    : undefined,
+            },
+            team2: {
+                ...matchup.team2,
+                standings: team2Standings
+                    ? {
+                          totalPointsFor: team2Standings.pointsFor,
+                          totalPointsAgainst: team2Standings.pointsAgainst,
+                          rank: team2Standings.rank,
+                          wins: team2Standings.wins,
+                          losses: team2Standings.losses,
+                          ties: team2Standings.ties,
+                          winPercentage: team2Standings.winPercentage,
+                          streak: {
+                              type: team2Standings.streak.type,
+                              value: team2Standings.streak.value,
+                          },
+                          playoffSeed: team2Standings.playoffSeed,
+                      }
+                    : undefined,
+            },
+        };
+    });
 }
 
 // Types for Yahoo matchups data structure
@@ -181,26 +253,37 @@ export type TeamManager = {
     fantasyTier: string;
 };
 
+export type TeamInfo = {
+    id: string;
+    name: string;
+    logo: string;
+    points: number;
+    pointsProjected: number;
+    numberOfMoves: number;
+    numberOfTrades: number;
+    waiverBudget: number;
+    manager: TeamManager | null;
+    players: TransformedPlayer[];
+    standings?: {
+        totalPointsFor: number;
+        totalPointsAgainst: number;
+        rank: number;
+        wins: number;
+        losses: number;
+        ties: number;
+        winPercentage: number;
+        streak: {
+            type: string;
+            value: number;
+        };
+        playoffSeed: number;
+    };
+};
+
 export type TransformedMatchup = {
     id: string;
-    team1: {
-        name: string;
-        logo: string;
-        points: number;
-        pointsProjected: number;
-        id: string;
-        players: TransformedPlayer[];
-        manager: TeamManager;
-    };
-    team2: {
-        name: string;
-        logo: string;
-        points: number;
-        pointsProjected: number;
-        id: string;
-        players: TransformedPlayer[];
-        manager: TeamManager;
-    };
+    team1: TeamInfo;
+    team2: TeamInfo;
 };
 
 // Types for Yahoo roster data structure
@@ -329,6 +412,77 @@ export function transformRoster(data: YahooRosterResponse): TransformedPlayer[] 
     return players;
 }
 
+type YahooManagerData = {
+    guid?: string;
+    nickname?: string;
+    felo_score?: string;
+    felo_tier?: string;
+};
+
+function extractTeamInfo(teamData: Array<unknown>) {
+    let teamId = '';
+    let teamName = '';
+    let teamLogo = '';
+    let teamManager: TeamManager | null = null;
+    let numberOfMoves = 0;
+    let numberOfTrades = 0;
+    let waiverBudget = 0;
+
+    // First element contains team metadata
+    const teamInfo = teamData[0];
+    if (Array.isArray(teamInfo)) {
+        for (const item of teamInfo) {
+            if (item && typeof item === 'object') {
+                if ('team_id' in item) {
+                    teamId = item.team_id as string;
+                }
+                if ('name' in item) {
+                    teamName = item.name as string;
+                }
+                if ('team_logos' in item && Array.isArray(item.team_logos)) {
+                    teamLogo = item.team_logos[0]?.team_logo?.url || '';
+                }
+                if ('managers' in item && Array.isArray(item.managers)) {
+                    const yahooManager = item.managers[0]?.manager as YahooManagerData;
+                    teamManager = {
+                        id: yahooManager.guid || '',
+                        name: yahooManager.nickname || '',
+                        fantasyScore: parseInt(yahooManager.felo_score || '0'),
+                        fantasyTier: yahooManager.felo_tier || '',
+                    };
+                }
+                if ('number_of_moves' in item) {
+                    numberOfMoves = item.number_of_moves as number;
+                }
+                if ('number_of_trades' in item) {
+                    numberOfTrades = item.number_of_trades as number;
+                }
+                if ('faab_balance' in item) {
+                    waiverBudget = item.faab_balance as number;
+                }
+            }
+        }
+    }
+
+    // Second element contains team points
+    const teamPoints = parseFloat((teamData[1] as TeamPoints)?.team_points?.total || '0');
+    const teamPointsProjected = parseFloat(
+        (teamData[1] as TeamPoints)?.team_projected_points?.total || '0'
+    );
+
+    return {
+        id: teamId,
+        name: teamName,
+        logo: teamLogo,
+        points: teamPoints,
+        pointsProjected: teamPointsProjected,
+        manager: teamManager,
+        numberOfMoves,
+        numberOfTrades,
+        waiverBudget,
+    };
+}
+
 export function transformMatchups(data: YahooScoreboardResponse): TransformedMatchup[] {
     const matchups = data?.fantasy_content?.league[1]?.scoreboard?.[0]?.matchups;
 
@@ -352,56 +506,18 @@ export function transformMatchups(data: YahooScoreboardResponse): TransformedMat
             continue;
         }
 
-        // Team 1 information - following the Python array indexing
-        const team1Name = (team1Data[0] as any)?.[2]?.name || '';
-        const team1Logo = (team1Data[0] as any)?.[5]?.team_logos?.[0]?.team_logo?.url || '';
-        const team1ID = (team1Data[0] as any)?.[1]?.team_id || '';
-        const team1Points = parseFloat((team1Data[1] as TeamPoints)?.team_points?.total || '0');
-        const team1PointsProjected = parseFloat(
-            (team1Data[1] as TeamPoints)?.team_projected_points?.total || '0'
-        );
-        // const manager = index 23, managers, manager, guid
-        const team1Manager = (team1Data[0] as Array<any>)?.[23]?.managers[0]?.manager;
-
-        // Team 2 information - following the Python array indexing
-        const team2Name = (team2Data[0] as any)?.[2]?.name || '';
-        const team2Logo = (team2Data[0] as any)?.[5]?.team_logos?.[0]?.team_logo?.url || '';
-        const team2ID = (team2Data[0] as any)?.[1]?.team_id || '';
-        const team2Points = parseFloat((team2Data[1] as TeamPoints)?.team_points?.total || '0');
-        const team2PointsProjected = parseFloat(
-            (team2Data[1] as TeamPoints)?.team_projected_points?.total || '0'
-        );
-        const team2Manager = (team2Data[0] as Array<any>)?.[23]?.managers[0]?.manager;
+        const team1Info = extractTeamInfo(team1Data);
+        const team2Info = extractTeamInfo(team2Data);
 
         transformedMatchups.push({
-            id: `${team1Manager.guid}-vs-${team2Manager.guid}`,
+            id: `${team1Info.manager?.id || ''}-vs-${team2Info.manager?.id || ''}`,
             team1: {
-                name: team1Name,
-                logo: team1Logo,
-                points: team1Points,
-                pointsProjected: team1PointsProjected,
-                id: team1ID,
+                ...team1Info,
                 players: [],
-                manager: {
-                    id: team1Manager?.guid || '',
-                    name: team1Manager?.nickname || '',
-                    fantasyScore: parseInt(team1Manager?.felo_score || '0'),
-                    fantasyTier: team1Manager?.felo_tier || '',
-                },
             },
             team2: {
-                name: team2Name,
-                logo: team2Logo,
-                points: team2Points,
-                pointsProjected: team2PointsProjected,
-                id: team2ID,
+                ...team2Info,
                 players: [],
-                manager: {
-                    id: team2Manager?.guid || '',
-                    name: team2Manager?.nickname || '',
-                    fantasyScore: parseInt(team2Manager?.felo_score || '0'),
-                    fantasyTier: team2Manager?.felo_tier || '',
-                },
             },
         });
     }

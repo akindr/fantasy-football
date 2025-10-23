@@ -8,6 +8,7 @@ import { TransformedMatchup } from '../../../../functions/src/server/data-mapper
 import { LoadingSpinner } from '../../shared/loading-spinner';
 import { ErrorDialog } from '../../shared/error-dialog';
 import { AiOutlineCloseCircle } from 'react-icons/ai';
+import { numberFormatter } from '../../../utils/number-utils';
 
 const WEEK_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
 
@@ -95,16 +96,20 @@ export const Awards: React.FC = () => {
                     return (
                         <animated.div
                             style={style}
-                            className="absolute inset-0 flex flex-col justify-center items-center pt-16 px-4 pb-4"
+                            className="absolute inset-0 flex flex-col justify-center items-center p-4"
                         >
                             <img
                                 src="/awards-logo.png"
                                 className="w-5/6 md:max-w-[450px] h-auto object-contain"
                             />
-                            <p className="text-xl my-4 text-center">
-                                Choose a week to view the awards! Scroll down to see every matchup.
-                                When you&apos;re done, click the &apos;x&apos; to choose another
-                                week!
+                            <p className="text-base my-4 text-center font-artlab-regular">
+                                Choose a week to view the awards!
+                                <br />
+                                <br />
+                                Scroll down to see every matchup.
+                                <br />
+                                <br /> When you&apos;re done, click the &apos;x&apos; to choose
+                                another week!
                             </p>
                             <select
                                 value={week ?? ''}
@@ -126,13 +131,13 @@ export const Awards: React.FC = () => {
                     return (
                         <animated.div
                             style={style}
-                            className="absolute inset-0 flex flex-col justify-center items-center pt-16 px-4 pb-4"
+                            className="absolute inset-0 flex flex-col justify-center items-center p-4"
                         >
                             <img
                                 src="/awards-not-found.png"
                                 className="w-5/6 md:max-w-[450px] h-auto object-contain"
                             />
-                            <p className="text-2xl my-4 text-center">
+                            <p className="text-base lg:text-xl my-4 text-center font-artlab-regular">
                                 No awards found for Week {item.week}
                             </p>
                             <button
@@ -149,7 +154,7 @@ export const Awards: React.FC = () => {
                     return (
                         <animated.div style={style} className="absolute inset-0">
                             <div
-                                className="absolute top-4 right-4 w-[40px] h-[40px] cursor-pointer text-white text-4xl z-10 hover:text-gray-300 transition-colors"
+                                className="absolute top-2 right-2 w-[40px] h-[40px] cursor-pointer text-white text-4xl z-10 hover:text-gray-300 transition-colors flex flex-col items-center justify-center bg-gray-900/50 rounded-full"
                                 onClick={handleReset}
                             >
                                 <AiOutlineCloseCircle />
@@ -190,12 +195,17 @@ export const MatchupPlayers = ({ matchup }: { matchup: TransformedMatchup }) => 
                     </div>
                     {/* Total points */}
                     <div className="flex items-center justify-center">
-                        <span className="text-5xl font-semibold">{matchup.team1.points}</span>
+                        <span className="text-5xl font-semibold">
+                            {numberFormatter.format(matchup.team1.points)}
+                        </span>
                     </div>
                     {/* Players list */}
                     <div className="flex flex-col divide-y divide-white/50">
                         {matchup.team1.players?.map(player => {
-                            const points = player.stats?.points ?? '-';
+                            const points =
+                                player.stats?.points != null
+                                    ? numberFormatter.format(player.stats.points)
+                                    : '-';
                             return (
                                 <div key={player.playerId} className="py-2">
                                     <div className="grid grid-cols-[3rem_1fr_auto] items-center gap-3">
@@ -226,12 +236,17 @@ export const MatchupPlayers = ({ matchup }: { matchup: TransformedMatchup }) => 
                     </div>
                     {/* Total points */}
                     <div className="flex items-center justify-center">
-                        <span className="text-5xl font-semibold">{matchup.team2.points}</span>
+                        <span className="text-5xl font-semibold">
+                            {numberFormatter.format(matchup.team2.points)}
+                        </span>
                     </div>
                     {/* Players list */}
                     <div className="flex flex-col divide-y divide-white/50">
                         {matchup.team2.players?.map(player => {
-                            const points = player.stats?.points ?? '-';
+                            const points =
+                                player.stats?.points != null
+                                    ? numberFormatter.format(player.stats.points)
+                                    : '-';
                             return (
                                 <div key={player.playerId} className="py-2">
                                     <div className="grid grid-cols-[3rem_1fr_auto] items-center gap-3">

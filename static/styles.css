@@ -37,11 +37,20 @@ dark blue 1D3557
     --font-think-loved: 'Think Loved', sans-serif;
     --font-helvetica: Helvetica, sans-serif;
     --color-bg-white: #f1faee;
+    --text-base--line-height: calc(1.28 / 1);
+    --text-3xl--line-height: calc(2.13 / 1.875);
+    --font-dongra: 'Dongra', sans-serif;
+    --font-artlab-medium: 'Artlab Medium', 'Sink', sans-serif;
+    --font-artlab-regular: 'Artlab Regular', 'Sink', sans-serif;
 }
 
 @layer utilities {
     .clip-polygon {
         clip-path: polygon(0 0, 100% 0%, 86% 100%, 0 100%);
+    }
+
+    .clip-polygon-left {
+        clip-path: polygon(0 0, 92% 0, 100% 100%, 8% 100%);
     }
 
     .mask-radial-fade {
@@ -55,6 +64,40 @@ dark blue 1D3557
     width: 100%;
     height: 100%;
     will-change: transform, opacity;
+}
+
+@font-face {
+    font-family: 'Dongra';
+    src:
+        url('./fonts/Dongra.otf') format('opentype'),
+        url('./fonts/Dongra.ttf') format('truetype');
+    font-style: normal;
+    font-weight: normal;
+    text-rendering: optimizeLegibility;
+}
+
+@font-face {
+    font-family: 'Artlab Medium';
+    src:
+        url('./fonts/Artlab-Medium.otf') format('opentype'),
+        url('./fonts/Artlab-Medium.woff') format('woff'),
+        url('./fonts/Artlab-Medium.woff2') format('woff2'),
+        url('./fonts/Artlab-Medium.ttf') format('truetype');
+    font-style: normal;
+    font-weight: normal;
+    text-rendering: optimizeLegibility;
+}
+
+@font-face {
+    font-family: 'Artlab Regular';
+    src:
+        url('./fonts/Artlab-Regular.otf') format('opentype'),
+        url('./fonts/Artlab-Regular.woff') format('woff'),
+        url('./fonts/Artlab-Regular.woff2') format('woff2'),
+        url('./fonts/Artlab-Regular.ttf') format('truetype');
+    font-style: normal;
+    font-weight: normal;
+    text-rendering: optimizeLegibility;
 }
 
 @font-face {
