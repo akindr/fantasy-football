@@ -11,8 +11,11 @@ import { AiOutlineCloseCircle } from 'react-icons/ai';
 import { numberFormatter } from '../../../utils/number-utils';
 import { RankDisplay } from './matchup-details';
 import { StreakDisplay } from './matchup-details';
+import { CloverTrends } from './clovers-trends';
+import { FigsGossipCorner } from './figs-gossip-corner';
+import { EndScreen } from './end-screen';
 
-const WEEK_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+const WEEK_OPTIONS = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
 
 type ViewState =
     | { type: 'home' }
@@ -161,7 +164,7 @@ export const Awards: React.FC = () => {
                             >
                                 <AiOutlineCloseCircle />
                             </div>
-                            <AllAwardsContainer awards={item.data} />
+                            <AllAwardsContainer awards={item.data} week={week ?? 1} />
                         </animated.div>
                     );
                 }
@@ -172,12 +175,15 @@ export const Awards: React.FC = () => {
     );
 };
 
-export const AllAwardsContainer = ({ awards }: { awards: Award[] }) => {
+export const AllAwardsContainer = ({ awards, week }: { awards: Award[]; week: number }) => {
     return (
         <div className="flex-1 h-full w-full relative overflow-y-auto snap-y snap-mandatory">
             {awards.map(award => (
                 <AwardsDisplay key={award.matchup.id} award={award} />
             ))}
+            <CloverTrends />
+            <FigsGossipCorner />
+            <EndScreen week={week} />
         </div>
     );
 };

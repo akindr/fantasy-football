@@ -111,7 +111,7 @@ export const MatchupDetails = ({ award }: { award: Award }) => {
             {/* Scoring players  */}
             <animated.div
                 style={scoringPlayersStyles}
-                className="flex flex-col items-center justify-start rounded-md p-3 bg-slate-600/75 text-white w-full"
+                className="flex flex-col items-center justify-start rounded-md p-3 bg-gray-500/75 text-white w-full"
             >
                 {/* <div className="w-full text-center text-3xl mb-1 bg-linear-to-b from-cyan-500 to-indigo-400 text-transparent bg-clip-text">
                     Matchup Highlights
@@ -122,7 +122,8 @@ export const MatchupDetails = ({ award }: { award: Award }) => {
                 </div>
 
                 <div className="flex flex-row items-center justify-start w-full text-left">
-                    <span className="text-xl text-indigo-400 mr-6">
+                    <img src={winner.logo} className="w-6 h-6 object-cover rounded-full mr-2" />
+                    <span className="text-xl text-indigo-200 text-shadow-sm">
                         {winner.name}&apos;s <span className="text-gray-100/95">MVPs</span>&nbsp;⭐
                     </span>
                 </div>
@@ -138,8 +139,10 @@ export const MatchupDetails = ({ award }: { award: Award }) => {
                     </div>
                 ))}
 
-                <div className="flex flex-row items-end justify-start w-full text-left mt-6">
-                    <span className="text-xl text-indigo-400 mr-6">
+                <div className="flex flex-row items-center justify-start w-full text-left mt-6">
+                    <img src={loser.logo} className="w-6 h-6 object-cover rounded-full mr-2" />
+
+                    <span className="text-xl text-indigo-300 mr-6 text-shadow-sm">
                         {loser.name}&apos;s <span className="text-gray-100/95">Poopy Pants</span>
                         &nbsp;💩
                     </span>
@@ -156,12 +159,23 @@ export const MatchupDetails = ({ award }: { award: Award }) => {
                     </div>
                 ))}
 
-                {award.award.funFacts && (
-                    <div className="w-full text-left mb-4 text-base font-artlab-regular">
-                        <div className="text-xl text-indigo-400 mb-2">Fun Facts 🎲</div>
-                        <Markdown>{award.award.funFacts}</Markdown>
-                    </div>
-                )}
+                <div className="flex flex-row items-end justify-start w-full text-left mt-6">
+                    <span className="text-xl text-indigo-200 text-shadow-sm">
+                        Clover&apos;s Fun Facts
+                    </span>
+                </div>
+                <div className="w-full text-left text-base font-artlab-regular">
+                    <Markdown
+                        components={{
+                            ul: props => <ul className="list-disc list-inside mb-1" {...props} />,
+                            ol: props => <ol className="mt-4" {...props} />,
+                            li: props => <li className="mb-1" {...props} />,
+                            p: props => <p className="text-lg" {...props} />,
+                        }}
+                    >
+                        {award.award.funFacts}
+                    </Markdown>
+                </div>
             </animated.div>
         </div>
     );
