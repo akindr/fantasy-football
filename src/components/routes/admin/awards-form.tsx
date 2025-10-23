@@ -16,6 +16,7 @@ interface AwardsFormProps {
     matchups: MatchupResponse[] | undefined;
     selectedMatchupIndex: number;
     onInsightsLoaded: (insights: string) => void;
+    onThisYearInsightsLoaded: (insights: string) => void;
 }
 
 export const AwardsForm: React.FC<AwardsFormProps> = ({
@@ -23,10 +24,12 @@ export const AwardsForm: React.FC<AwardsFormProps> = ({
     matchups,
     selectedMatchupIndex,
     onInsightsLoaded,
+    onThisYearInsightsLoaded,
 }) => {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
-    const [matchupHighlights, setMatchupHighlights] = useState('');
+    const [blurb, setBlurb] = useState('');
+    const [funFacts, setFunFacts] = useState('');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [uploadedImageUrl, setUploadedImageUrl] = useState<string>('');
@@ -46,9 +49,6 @@ export const AwardsForm: React.FC<AwardsFormProps> = ({
         },
         onSuccess: () => {
             console.log('Award created successfully!');
-            setTitle('');
-            setDescription('');
-            setMatchupHighlights('');
         },
         onError: error => {
             console.error('Error creating award:', error);
@@ -80,7 +80,8 @@ export const AwardsForm: React.FC<AwardsFormProps> = ({
             },
             title,
             description,
-            matchupHighlights,
+            blurb,
+            funFacts,
         } as const;
 
         // @ts-expect-error server typing TBD
@@ -92,12 +93,22 @@ export const AwardsForm: React.FC<AwardsFormProps> = ({
             return;
         }
         const insightData = await yahooFantasyService.makeRequest(
-            `${API_CONFIG.apiUri}/admin/insights?matchup=${selectedMatchupIndex + 1}&team1=${matchups?.[selectedMatchupIndex]?.team1.manager.id}&team2=${matchups?.[selectedMatchupIndex]?.team2.manager.id}`,
+            `${API_CONFIG.apiUri}/admin/insights?matchup=${selectedMatchupIndex + 1}&team1=${matchups?.[selectedMatchupIndex]?.team1?.manager?.id}&team2=${matchups?.[selectedMatchupIndex]?.team2?.manager?.id}`,
             {
                 method: 'GET',
             }
         );
         onInsightsLoaded(insightData.insights);
+    };
+
+    const getThisYearMatchupInsights = async () => {
+        if (!matchups || !matchups[selectedMatchupIndex]) {
+            return;
+        }
+        const insightData = await yahooFantasyService.makeRequest(
+            `${API_CONFIG.apiUri}/admin/this-year-insights?week=${week}&team1=${matchups?.[selectedMatchupIndex]?.team1.id}&team2=${matchups?.[selectedMatchupIndex]?.team2.id}`
+        );
+        onThisYearInsightsLoaded(insightData.insights);
     };
 
     const getLeagueDebug = async () => {
@@ -158,7 +169,7 @@ export const AwardsForm: React.FC<AwardsFormProps> = ({
     };
 
     return (
-        <div className="bg-slate-800 rounded-lg p-6 mb-4 col-span-2">
+        <div className="bg-slate-800 rounded-lg p-6 mb-4 col-span-3">
             <h2 className="text-gray-300 mb-2 font-bold text-2xl">Awards Creator</h2>
             <div className="p-4 bg-slate-700 rounded mb-4">
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -192,15 +203,29 @@ export const AwardsForm: React.FC<AwardsFormProps> = ({
                     </div>
 
                     <div>
-                        <label htmlFor="description" className="block font-medium mb-2">
-                            Matchup Highlights (md allowed)
+                        <label htmlFor="blurb" className="block font-medium mb-2">
+                            Matchup Blurb (md allowed)
                         </label>
                         <textarea
-                            id="matchupHighlights"
-                            value={matchupHighlights}
-                            onChange={e => setMatchupHighlights(e.target.value)}
+                            id="blurb"
+                            value={blurb}
+                            onChange={e => setBlurb(e.target.value)}
                             className="w-full px-3 py-2 bg-slate-600 text-white rounded border border-slate-500 focus:outline-none focus:border-blue-500 min-h-[100px]"
-                            placeholder="Enter matchup highlights"
+                            placeholder="Enter matchup blurb"
+                            required
+                        />
+                    </div>
+
+                    <div>
+                        <label htmlFor="funFacts" className="block font-medium mb-2">
+                            Fun Facts (md allowed)
+                        </label>
+                        <textarea
+                            id="funFacts"
+                            value={funFacts}
+                            onChange={e => setFunFacts(e.target.value)}
+                            className="w-full px-3 py-2 bg-slate-600 text-white rounded border border-slate-500 focus:outline-none focus:border-blue-500 min-h-[100px]"
+                            placeholder="Enter fun facts"
                             required
                         />
                     </div>
@@ -258,9 +283,11 @@ export const AwardsForm: React.FC<AwardsFormProps> = ({
                             {createAwardMutation.isPending ? 'Creating...' : 'Create Award'}
                         </Button>
                         <Button type="button" onClick={getMatchupInsights}>
-                            Get Insights for Matchup
+                            Historic Insights
                         </Button>
-
+                        <Button type="button" onClick={getThisYearMatchupInsights}>
+                            Current Year Insights
+                        </Button>
                         <Button type="button" onClick={getLeagueDebug}>
                             League Debug
                         </Button>

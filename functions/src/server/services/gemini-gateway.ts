@@ -2,6 +2,7 @@ import { GoogleGenAI, Modality } from '@google/genai';
 
 import { TeamManager, TransformedPlayer, type TransformedMatchup } from '../data-mappers';
 import { logger } from './logger';
+import { HeadToHeadSummaryData } from '../types';
 
 export type HeadToHeadYearlyData = {
     year: string;
@@ -71,6 +72,59 @@ export class GeminiGateway {
 
         const userPrompt = `
         **JSON Data:**
+        ${matchupContext}
+        `;
+
+        try {
+            const response = await this.ai.models.generateContent({
+                model: 'gemini-2.5-flash', // Good for structured analysis and speed
+                contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+                config: {
+                    systemInstruction: systemInstructions,
+                    temperature: 0.5, // Keep it slightly lower for factual analysis
+                },
+            });
+
+            logger.info('--- Gemini Analysis ---');
+            logger.info(response.text);
+            return response.text;
+        } catch (error) {
+            logger.error('Error calling Gemini API:', error);
+            return '';
+        }
+    };
+
+    getThisYearMatchupInsights = async (matchups: HeadToHeadSummaryData) => {
+        const matchupContext = JSON.stringify(matchups);
+        const systemInstructions = `
+        You are a professional Fantasy Football Matchup Review Analyst. Your task is to analyze the provided JSON data, which contains the Year-to-Date (YTD) performance context and specific player scores for a completed head-to-head matchup.
+
+Identify and present **five (5) critical, diagnostic facts** that explain *why* the observed outcome occurred.
+
+**Matchup Review JSON Data (Must include YTD Summaries AND MatchupRosterDetail):**
+<INSERT_YOUR_PREVIOUS_MATCHUP_REVIEW_JSON_DATA_HERE>
+
+---
+
+**Analysis Criteria (You MUST prioritize facts that align with these categories to diagnose the result):**
+
+1.  **The Decisive Player Factor (The Hero/Goat):** Identify the single player whose score was the largest positive deviation (for the winner) or largest negative deviation (for the loser) from their team's average positional score, making them the most statistically responsible for the outcome.
+2.  **The Trend-Breaker:** Did the team with the superior momentum (streaks or recent point trend) win the game? If not, identify the key data point that explains how the underdog was able to break the trend.
+3.  **Positional Decisive Factor:** Identify the single position (QB, RB, WR, etc.) where the winning team's total score definitively crushed the losing team's score, making it the factual decisive factor for the final outcome.
+4.  **The O/U Performance Swing:** Compare the YTD Average Over/Under Performance of each team to their actual Over/Under Performance *this week*. Which team's efficiency swing (positive or negative) most directly determined the win?
+5.  **The Statistical Context:** Compare the final winning and losing scores to the **League Average Score** and the **Highest Score of the Season**. Was this matchup a high-scoring or low-scoring affair relative to the league landscape for that week?
+
+---
+
+**Required Output Format:**
+
+Provide **exactly five (5) distinct facts**, formatted as a numbered list with a bold, diagnostic title for each. Each point must state the key finding, the supporting data (Player Name, Points, O/U Deltas, Averages), and a brief, compelling analytical summary of *why* the factor determined the result.
+
+Finally, summarize the highlights into a two to five sentence paragraph with a succinct conclusion that includes key findings and statistics.
+        `;
+
+        const userPrompt = `
+        **Current Matchup JSON Data:**
         ${matchupContext}
         `;
 

@@ -136,15 +136,12 @@ export class YahooGateway {
         const url = getUrl(`league/${leagueSpec}/scoreboard;week=${week}`);
         logger.info('Fetching matchups', { url });
         const matchupsResponse = await this._makeRequest(url, req, res);
-        const standingsData = await this.getStandings(req, res);
 
         const transformedMatchups = transformMatchups(matchupsResponse);
 
-        const mergedMatchupData = mergeMatchupAndStandingsData(transformedMatchups, standingsData);
-
         // Collect all unique team IDs from matchups
         const teamIds = [];
-        for (const matchup of mergedMatchupData) {
+        for (const matchup of transformedMatchups) {
             teamIds.push(matchup.team1.id);
             teamIds.push(matchup.team2.id);
         }
@@ -162,10 +159,25 @@ export class YahooGateway {
         });
 
         // Map the roster data back to the matchups
-        for (const matchup of mergedMatchupData) {
+        for (const matchup of transformedMatchups) {
             matchup.team1.players = rosterMap.get(matchup.team1.id);
             matchup.team2.players = rosterMap.get(matchup.team2.id);
         }
+
+        return transformedMatchups;
+    }
+
+    async getMatchupsWithStandingsData(req: express.Request, res: express.Response) {
+        const week = req.query.week as string;
+
+        if (!week) {
+            throw new Error('Week is required');
+        }
+
+        const matchups = await this.getMatchups(req, res);
+        const standingsData = await this.getStandings(req, res);
+
+        const mergedMatchupData = mergeMatchupAndStandingsData(matchups, standingsData);
 
         return mergedMatchupData;
     }

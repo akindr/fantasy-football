@@ -20,14 +20,14 @@ export const MatchupDetails = ({ award }: { award: Award }) => {
         return winner.players
             .filter(p => p.isStarter)
             .sort((a, b) => (b.stats?.points ?? 0) - (a.stats?.points ?? 0))
-            .slice(0, 3);
+            .slice(0, 2);
     }, [winner]);
 
     const lowestScoringPlayers = useMemo(() => {
         return loser.players
             .filter(p => p.isStarter)
             .sort((a, b) => (a.stats?.points ?? 0) - (b.stats?.points ?? 0))
-            .slice(0, 3);
+            .slice(0, 2);
     }, [loser]);
 
     const [ref, isInView] = useInView({
@@ -118,8 +118,9 @@ export const MatchupDetails = ({ award }: { award: Award }) => {
                 </div> */}
 
                 <div className="w-full text-left mb-4 text-base font-artlab-regular">
-                    <Markdown>{award.award.matchupHighlights}</Markdown>
+                    <Markdown>{award.award.blurb}</Markdown>
                 </div>
+
                 <div className="flex flex-row items-center justify-start w-full text-left">
                     <span className="text-xl text-indigo-400 mr-6">
                         {winner.name}&apos;s <span className="text-gray-100/95">MVPs</span>&nbsp;⭐
@@ -154,12 +155,19 @@ export const MatchupDetails = ({ award }: { award: Award }) => {
                         </span>
                     </div>
                 ))}
+
+                {award.award.funFacts && (
+                    <div className="w-full text-left mb-4 text-base font-artlab-regular">
+                        <div className="text-xl text-indigo-400 mb-2">Fun Facts 🎲</div>
+                        <Markdown>{award.award.funFacts}</Markdown>
+                    </div>
+                )}
             </animated.div>
         </div>
     );
 };
 
-function StreakDisplay({ streak }: { streak: { type: string; value: number } }) {
+export function StreakDisplay({ streak }: { streak: { type: string; value: number } }) {
     const isWinStreak = streak.type.toLocaleLowerCase() === 'win';
     const streakValue = Math.abs(streak.value);
 
@@ -195,7 +203,7 @@ function StreakDisplay({ streak }: { streak: { type: string; value: number } }) 
     );
 }
 
-function RankDisplay({ rank }: { rank: number }) {
+export function RankDisplay({ rank }: { rank: number }) {
     const TOTAL_TEAMS = 12;
 
     // Determine emoji based on rank

@@ -9,6 +9,8 @@ import { LoadingSpinner } from '../../shared/loading-spinner';
 import { ErrorDialog } from '../../shared/error-dialog';
 import { AiOutlineCloseCircle } from 'react-icons/ai';
 import { numberFormatter } from '../../../utils/number-utils';
+import { RankDisplay } from './matchup-details';
+import { StreakDisplay } from './matchup-details';
 
 const WEEK_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
 
@@ -182,10 +184,10 @@ export const AllAwardsContainer = ({ awards }: { awards: Award[] }) => {
 
 export const MatchupPlayers = ({ matchup }: { matchup: TransformedMatchup }) => {
     return (
-        <div className="h-full w-full p-4 snap-start bg-indigo-500/66 overflow-y-auto">
+        <div className="h-full w-full snap-start overflow-y-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Team 1 Column */}
-                <div className="bg-white/40 rounded-3xl p-4 flex flex-col gap-4">
+                <div className="bg-slate-400/40 rounded-3xl p-4 flex flex-col gap-4">
                     {/* Header: Team logo + name */}
                     <div className="flex flex-col items-center gap-2">
                         <img src={matchup.team1.logo} className="w-16 h-16 rounded-full" />
@@ -194,11 +196,23 @@ export const MatchupPlayers = ({ matchup }: { matchup: TransformedMatchup }) => 
                         </span>
                     </div>
                     {/* Total points */}
-                    <div className="flex items-center justify-center">
+                    <div className="flex flex-col items-center justify-center">
                         <span className="text-5xl font-semibold">
                             {numberFormatter.format(matchup.team1.points)}
                         </span>
+                        <span className="text-xl text-gray-300">
+                            {numberFormatter.format(matchup.team1.pointsProjected)} Projected
+                        </span>
+                        <span className="text-xl text-gray-100">
+                            {matchup.team1.standings?.wins} - {matchup.team1.standings?.losses}
+                        </span>
                     </div>
+                    {matchup.team1.standings?.rank && (
+                        <RankDisplay rank={matchup.team1.standings.rank} />
+                    )}
+                    {matchup.team1.standings?.streak && (
+                        <StreakDisplay streak={matchup.team1.standings.streak} />
+                    )}
                     {/* Players list */}
                     <div className="flex flex-col divide-y divide-white/50">
                         {matchup.team1.players?.map(player => {
@@ -226,7 +240,7 @@ export const MatchupPlayers = ({ matchup }: { matchup: TransformedMatchup }) => 
                 </div>
 
                 {/* Team 2 Column */}
-                <div className="bg-white/40 rounded-3xl p-4 flex flex-col gap-4">
+                <div className="bg-slate-400/40 rounded-3xl p-4 flex flex-col gap-4">
                     {/* Header: Team logo + name */}
                     <div className="flex flex-col items-center gap-2">
                         <img src={matchup.team2.logo} className="w-16 h-16 rounded-full" />
@@ -235,11 +249,23 @@ export const MatchupPlayers = ({ matchup }: { matchup: TransformedMatchup }) => 
                         </span>
                     </div>
                     {/* Total points */}
-                    <div className="flex items-center justify-center">
+                    <div className="flex flex-col items-center justify-center">
                         <span className="text-5xl font-semibold">
                             {numberFormatter.format(matchup.team2.points)}
                         </span>
+                        <span className="text-xl text-gray-300">
+                            {numberFormatter.format(matchup.team2.pointsProjected)} Projected
+                        </span>
+                        <span className="text-xl text-gray-100">
+                            {matchup.team2.standings?.wins} - {matchup.team2.standings?.losses}
+                        </span>
                     </div>
+                    {matchup.team2.standings?.rank && (
+                        <RankDisplay rank={matchup.team2.standings.rank} />
+                    )}
+                    {matchup.team2.standings?.streak && (
+                        <StreakDisplay streak={matchup.team2.standings.streak} />
+                    )}
                     {/* Players list */}
                     <div className="flex flex-col divide-y divide-white/50">
                         {matchup.team2.players?.map(player => {
