@@ -7,6 +7,7 @@ import {
     transformPlayerStats,
     transformRoster,
     transformStandings,
+    mergeMatchupAndStandingsData,
     type YahooStandingsResponse,
 } from '../data-mappers';
 
@@ -134,14 +135,16 @@ export class YahooGateway {
 
         const url = getUrl(`league/${leagueSpec}/scoreboard;week=${week}`);
         logger.info('Fetching matchups', { url });
+        const matchupsResponse = await this._makeRequest(url, req, res);
+        const standingsData = await this.getStandings(req, res);
 
-        const response = await this._makeRequest(url, req, res);
+        const transformedMatchups = transformMatchups(matchupsResponse);
 
-        const transformedData = transformMatchups(response);
+        const mergedMatchupData = mergeMatchupAndStandingsData(transformedMatchups, standingsData);
 
         // Collect all unique team IDs from matchups
         const teamIds = [];
-        for (const matchup of transformedData) {
+        for (const matchup of mergedMatchupData) {
             teamIds.push(matchup.team1.id);
             teamIds.push(matchup.team2.id);
         }
@@ -159,12 +162,12 @@ export class YahooGateway {
         });
 
         // Map the roster data back to the matchups
-        for (const matchup of transformedData) {
+        for (const matchup of mergedMatchupData) {
             matchup.team1.players = rosterMap.get(matchup.team1.id);
             matchup.team2.players = rosterMap.get(matchup.team2.id);
         }
 
-        return transformedData;
+        return mergedMatchupData;
     }
 
     async getTeamPlayers(

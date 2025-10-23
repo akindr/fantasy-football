@@ -344,10 +344,10 @@ function getApp(
                         for (let i = 0; i < weekMatchups.matchups.length; i++) {
                             const matchup = weekMatchups.matchups[i];
                             if (
-                                (matchup.team1.manager.id === team1 &&
-                                    matchup.team2.manager.id === team2) ||
-                                (matchup.team1.manager.id === team2 &&
-                                    matchup.team2.manager.id === team1)
+                                (matchup.team1.manager?.id === team1 &&
+                                    matchup.team2.manager?.id === team2) ||
+                                (matchup.team1.manager?.id === team2 &&
+                                    matchup.team2.manager?.id === team1)
                             ) {
                                 // Compute the winner
                                 const winner =
