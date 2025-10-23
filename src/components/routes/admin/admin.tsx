@@ -21,7 +21,8 @@ export const Admin: React.FC = () => {
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [week, setWeek] = useState(1);
     const [selectedMatchupIndex, setSelectedMatchupIndex] = useState(0);
-    const [insights, setInsights] = useState<string>('');
+    const [historicInsights, setHistoricInsights] = useState<string>('');
+    const [thisYearInsights, setThisYearInsights] = useState<string>('');
 
     const {
         data: matchups,
@@ -87,12 +88,13 @@ export const Admin: React.FC = () => {
     }
 
     return (
-        <div className="p-4 text-white grid grid-cols-5 gap-4 h-full overflow-y-auto text-base font-helvetica">
+        <div className="p-4 text-white grid grid-cols-12 gap-4 h-full overflow-y-auto text-base font-helvetica">
             <AwardsForm
                 week={week}
                 matchups={matchups}
                 selectedMatchupIndex={selectedMatchupIndex}
-                onInsightsLoaded={setInsights}
+                onInsightsLoaded={setHistoricInsights}
+                onThisYearInsightsLoaded={setThisYearInsights}
             />
             <div className="bg-slate-800 rounded-lg p-6 col-span-3 flex flex-col gap-3 h-full overflow-y-auto">
                 <div className="flex flex-row items-center justify-between gap-3">
@@ -140,7 +142,12 @@ export const Admin: React.FC = () => {
                         />
                     </div>
                 )}
-                {insights && <Insights insights={insights} />}
+            </div>
+            <div className="col-span-3 h-full bg-slate-800 rounded-lg p-2 overflow-y-auto">
+                {historicInsights && <Insights insights={historicInsights} />}
+            </div>
+            <div className="col-span-3 h-full bg-slate-800 rounded-lg p-2 overflow-y-auto">
+                {thisYearInsights && <Insights insights={thisYearInsights} />}
             </div>
         </div>
     );

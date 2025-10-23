@@ -217,17 +217,8 @@ export function mergeMatchupAndStandingsData(
     });
 }
 
-// Types for Yahoo matchups data structure
-type YahooMatchupTeam = {
-    team: Array<Array<any> | TeamPoints>;
-};
-
 type YahooMatchup = {
-    matchup: Array<{
-        teams: {
-            [key: string]: YahooMatchupTeam;
-        };
-    }>;
+    matchup: any;
 };
 
 type YahooMatchupsData = {
@@ -282,6 +273,7 @@ export type TeamInfo = {
 
 export type TransformedMatchup = {
     id: string;
+    week: number;
     team1: TeamInfo;
     team2: TeamInfo;
 };
@@ -396,7 +388,7 @@ export function transformRoster(data: YahooRosterResponse): TransformedPlayer[] 
 
                 players.push({
                     headshotUrl,
-                    isStarter: selectedPosition !== 'BN',
+                    isStarter: selectedPosition !== 'BN' && selectedPosition !== 'IR',
                     name,
                     playerId,
                     position,
@@ -508,9 +500,15 @@ export function transformMatchups(data: YahooScoreboardResponse): TransformedMat
 
         const team1Info = extractTeamInfo(team1Data);
         const team2Info = extractTeamInfo(team2Data);
+        let week = 1;
+
+        if (matchups[matchupId.toString()]?.matchup?.week) {
+            week = parseInt(matchups[matchupId.toString()]?.matchup?.week ?? '1');
+        }
 
         transformedMatchups.push({
             id: `${team1Info.manager?.id || ''}-vs-${team2Info.manager?.id || ''}`,
+            week,
             team1: {
                 ...team1Info,
                 players: [],

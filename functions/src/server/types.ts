@@ -1,4 +1,4 @@
-import { TransformedMatchup } from './data-mappers';
+import { TransformedMatchup, TransformedPlayer } from './data-mappers';
 
 export interface TokenData {
     access_token: string;
@@ -24,10 +24,49 @@ export type AwardData = {
     };
     title: string;
     description: string;
-    matchupHighlights: string;
+    blurb: string;
+    funFacts: string;
 };
 
 export type Award = {
     matchup: TransformedMatchup;
     award: AwardData;
+};
+
+export type TeamSummaryData = {
+    players: TransformedPlayer[];
+    name: string;
+    wins: number;
+    losses: number;
+    ties: number;
+    currentStreak: string;
+    averagePoints: number;
+    averageProjection: number;
+    numberOfMoves: number;
+    remainingBudget: number;
+    numberOfTrades: number;
+    avgOverUnderPerformance: number;
+    lastFourScores: number[];
+    positionalAverages: {
+        QB: number;
+        RB: number;
+        WR: number;
+        TE: number;
+        'W/R/T': number;
+        K: number;
+        DST: number;
+    };
+};
+
+export type HeadToHeadSummaryData = {
+    currentWeek: number;
+    teamA: TeamSummaryData;
+    teamB: TeamSummaryData;
+    leagueAvgOverUnderPerformance: number;
+    leagueContext: {
+        leagueAveragePoints: number;
+        highestScore: number;
+        bestRecord: string;
+        worstRecord: string;
+    };
 };

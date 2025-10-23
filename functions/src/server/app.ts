@@ -11,6 +11,7 @@ import { DatabaseService } from './services/database-service';
 import { StorageService } from './services/storage-service';
 import { firebaseAuthMiddleware } from './auth-middleware';
 import { multipartFormMiddleware } from './multipart-form-middleware';
+import { computeHeadToHeadSummary } from './summary-data-helpers';
 
 import { LEAGUE_YEARS } from './constants';
 import { handleMultipartUpload } from './handlers/multipart-form-handler';
@@ -120,7 +121,7 @@ function getApp(
             return;
         }
         try {
-            const matchups = await yahooGateway.getMatchups(req, res);
+            const matchups = await yahooGateway.getMatchupsWithStandingsData(req, res);
             res.json(matchups);
         } catch (e) {
             logger.error('Error fetching matchups:', e);
@@ -139,7 +140,7 @@ function getApp(
                 res.status(400).json({ error: 'week is required query parameter' });
                 return;
             }
-            const matchups = await yahooGateway.getMatchups(req, res);
+            const matchups = await yahooGateway.getMatchupsWithStandingsData(req, res);
             const awards: Award[] = [];
 
             for (const matchup of matchups) {
@@ -251,7 +252,8 @@ function getApp(
                     team2,
                     title,
                     description,
-                    matchupHighlights,
+                    blurb,
+                    funFacts,
                 } = req.body as AwardData;
                 if (week === undefined || matchupId === undefined) {
                     res.status(400).json({
@@ -266,7 +268,8 @@ function getApp(
                     team2,
                     title,
                     description,
-                    matchupHighlights,
+                    blurb,
+                    funFacts,
                 };
 
                 if (
@@ -275,10 +278,11 @@ function getApp(
                     !awardData.team2 ||
                     !awardData.title ||
                     !awardData.description ||
-                    !awardData.matchupHighlights
+                    !awardData.blurb ||
+                    !awardData.funFacts
                 ) {
                     res.status(400).json({
-                        error: 'Request body is missing one or more required fields for award data: imageURL, team1, team2, title, description, matchupHighlights',
+                        error: 'Request body is missing one or more required fields for award data: imageURL, team1, team2, title, description, blurb, funFacts',
                     });
                     return;
                 }
@@ -355,7 +359,6 @@ function getApp(
                                         ? matchup.team1
                                         : matchup.team2;
                                 matchupsForTheYear.push({
-                                    week: weekIdx + 1,
                                     winningManager: winner.manager,
                                     winningTeam: winner.name,
                                     marginOfVictory: Math.abs(
@@ -363,6 +366,7 @@ function getApp(
                                     ),
                                     isPlayoffGame: weekIdx + 1 >= 14,
                                     ...matchup,
+                                    week: weekIdx + 1, // Previous json blob didn't have week
                                 });
                             }
                         }
@@ -412,6 +416,77 @@ function getApp(
                 });
             } catch (e) {
                 logger.error('Error getting insights:', e);
+                res.status(500).json({ error: 'Unexpected error', original: e });
+            }
+        }
+    );
+
+    app.get(
+        `${prefix}/admin/this-year-insights`,
+        async (req: express.Request, res: express.Response) => {
+            try {
+                const { team1, team2, week } = req.query;
+                if (!team1 || !team2 || !week) {
+                    res.status(400).json({
+                        error: 'team1, team2, and week are required query parameters',
+                    });
+                    return;
+                }
+
+                const currentWeek = parseInt(week as string);
+
+                // Get current standings
+                const standings = await yahooGateway.getStandings(req, res);
+
+                // Find team names from standings
+                const team1Standings = standings.teams.find(s => s.teamId === team1);
+                const team2Standings = standings.teams.find(s => s.teamId === team2);
+
+                if (!team1Standings || !team2Standings) {
+                    res.status(404).json({
+                        error: 'One or both teams not found in standings',
+                    });
+                    return;
+                }
+
+                // Fetch all matchups for the season so far (weeks 1 through previous week)
+                const allMatchupsPromises = [];
+                for (let weekNum = 1; weekNum <= currentWeek; weekNum++) {
+                    // Store the original query and modify it temporarily
+                    const originalQuery = req.query;
+                    req.query = { ...originalQuery, week: weekNum.toString() };
+                    allMatchupsPromises.push(yahooGateway.getMatchups(req, res));
+                    req.query = originalQuery; // Restore original query
+                }
+
+                const allMatchupsByWeek = await Promise.all(allMatchupsPromises);
+                const allMatchupsThisSeason = allMatchupsByWeek.flat();
+
+                // Find the matchup for the desired week to use those players
+                const theMatchup = allMatchupsThisSeason.find(matchup => {
+                    return (
+                        matchup.week === currentWeek &&
+                        (matchup.team1.id === team1 || matchup.team2.id === team1)
+                    );
+                });
+
+                // Compute the comprehensive summary data
+                const summaryData = computeHeadToHeadSummary(
+                    team1 as string,
+                    team1Standings.name,
+                    team2 as string,
+                    team2Standings.name,
+                    currentWeek,
+                    standings,
+                    allMatchupsThisSeason,
+                    theMatchup?.team1.players ?? [],
+                    theMatchup?.team2.players ?? []
+                );
+
+                const insights = await geminiGateway.getThisYearMatchupInsights(summaryData);
+                res.json({ insights, summaryData });
+            } catch (e) {
+                logger.error('Error getting this year insights:', e);
                 res.status(500).json({ error: 'Unexpected error', original: e });
             }
         }
