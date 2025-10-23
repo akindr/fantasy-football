@@ -50,7 +50,7 @@ dark blue 1D3557
     }
 
     .clip-polygon-left {
-        clip-path: polygon(0 0, 92% 0, 100% 100%, 8% 100%);
+        clip-path: polygon(0 0, 100% 0%, 100% 100%, 12% 100%);
     }
 
     .mask-radial-fade {
