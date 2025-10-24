@@ -2,10 +2,11 @@
 import React, { useMemo } from 'react';
 import { useInView, useSpring, useChain, useSpringRef, animated } from '@react-spring/web';
 import Markdown from 'react-markdown';
-import { AiFillCheckCircle, AiOutlineCaretDown, AiOutlineCaretUp } from 'react-icons/ai';
+import { AiOutlineCaretDown, AiOutlineCaretUp } from 'react-icons/ai';
 
 import { Award } from '../../../../functions/src/server/types';
 import { numberFormatter } from '../../../utils/number-utils';
+import { TeamScoreboard } from './team-scoreboard';
 
 export const MatchupDetails = ({ award }: { award: Award }) => {
     const { matchup } = award;
@@ -54,64 +55,70 @@ export const MatchupDetails = ({ award }: { award: Award }) => {
         },
     });
 
-    const winnerCheckmarkRef = useSpringRef();
-    const winnerCheckmarkStyles = useSpring({
-        ref: winnerCheckmarkRef,
-        from: { scale: 0 },
-        to: { scale: isInView ? 1 : 0 },
-        config: {
-            tension: 250,
-        },
-    });
-
-    useChain(isInView ? [headlineRef, scoringPlayersRef, winnerCheckmarkRef] : [], [0, 0.2, 0.8]);
+    useChain(isInView ? [headlineRef, scoringPlayersRef] : [], [0, 0.2]);
 
     return (
         <div className="flex h-full w-full flex-col items-center justify-start p-4 relative">
-            {/* <div className="w-full text-center text-3xl md:text-4xl lg:text-5xl mb-4 bg-linear-to-r from-cyan-500 to-indigo-400 text-transparent bg-clip-text">
-                {award.award.title}
-            </div> */}
             {/* Headline with the team names */}
             <animated.div
                 ref={ref}
                 style={headlineStyles}
-                className="flex w-full flex-row justify-between items-center p-3 rounded-md gap-4 mb-4 text-3xl md:text-4xl lg:text-5xl bg-linear-to-l from-indigo-400/75 to-indigo-600/95 text-white relative"
+                className="flex w-full flex-row justify-between items-center p-3 rounded-md gap-4 mb-4 text-3xl md:text-4xl lg:text-5xl 
+                bg-linear-to-l from-indigo-400/75 to-indigo-600/95 lg:bg-none text-white relative"
             >
-                <div className="flex flex-col items-center justify-center p-2 rounded-md bg-slate-900/44 h-full relative">
-                    <animated.div
-                        style={winnerCheckmarkStyles}
-                        className="absolute top-[-6px] right-[-12px] text-emerald-500 text-4xl w-6 h-6 flex items-center justify-center rounded-full p-0 bg-white/95"
-                    >
-                        <AiFillCheckCircle />
-                    </animated.div>
-                    <div className="text-xl md:text-2xl lg:text-3xl text-center text-indigo-200">
-                        {winner.name}
-                    </div>
-                    <div className="text-5xl md:text-5xl lg:text-6xl mb-2">
-                        {numberFormatter.format(winner.points)}
-                    </div>
-                    {winner.standings?.rank && <RankDisplay rank={winner.standings.rank} />}
-                    {winner.standings?.streak && <StreakDisplay streak={winner.standings.streak} />}
+                <TeamScoreboard
+                    team={winner}
+                    isWinner={true}
+                    highlightPlayers={topScoringPlayers}
+                />
+                <div className="block lg:hidden flex-initial">
+                    <img src="/football-h2h.png" className="w-14 md:w-24 object-cover" />
                 </div>
-                <div>
-                    <img src="/football-h2h.png" className="w-14 object-cover" />
-                </div>
-                <div className="flex flex-col items-center justify-center p-2 rounded-md bg-slate-900/44 h-full">
-                    <div className="text-xl md:text-2xl lg:text-3xl text-center text-indigo-200">
-                        {loser.name}
+                <div className="hidden lg:flex flex-grow flex-col items-center justify-start h-full overflow-y-auto">
+                    <img
+                        src={award.award.imageURL}
+                        className="w-full max-w-[400px] rounded-md object-cover mb-4"
+                    />
+                    {/* Desktop - matchup highlights  */}
+                    <div className="flex flex-col items-center justify-start bg-slate-800/75 p-2 rounded-md">
+                        <div className="w-full text-center text-3xl mb-1 text-indigo-200 text-shadow-sm">
+                            Matchup Highlights
+                        </div>
+
+                        <div className="w-full text-left mb-4 text-xl font-artlab-regular">
+                            <Markdown>{award.award.blurb}</Markdown>
+                        </div>
+
+                        <div className="text-3xl text-indigo-200 text-shadow-sm mb-1">
+                            Clover&apos;s Fun Facts
+                        </div>
+                        <div className="w-full text-left text-xl font-artlab-regular">
+                            <Markdown
+                                components={{
+                                    ul: props => (
+                                        <ul className="list-disc list-inside mb-1" {...props} />
+                                    ),
+                                    ol: props => <ol className="mt-4" {...props} />,
+                                    li: props => <li className="mb-1" {...props} />,
+                                    p: props => <p className="text-lg" {...props} />,
+                                }}
+                            >
+                                {award.award.funFacts}
+                            </Markdown>
+                        </div>
                     </div>
-                    <div className="text-5xl md:text-5xl lg:text-6xl mb-2">
-                        {numberFormatter.format(loser.points)}
-                    </div>
-                    {loser.standings?.rank && <RankDisplay rank={loser.standings.rank} />}
-                    {loser.standings?.streak && <StreakDisplay streak={loser.standings.streak} />}
                 </div>
+                <TeamScoreboard
+                    team={loser}
+                    isWinner={false}
+                    highlightPlayers={lowestScoringPlayers}
+                />
             </animated.div>
 
-            {/* Scoring players  */}
+            {/* Scoring players; only on mobile. Desktop we use a different layout. */}
             <animated.div
                 style={scoringPlayersStyles}
-                className="flex flex-col items-center justify-start rounded-md p-3 bg-gray-500/75 text-white w-full"
+                className="flex flex-col items-center justify-start rounded-md p-3 bg-gray-500/75 text-white w-full overflow-y-auto lg:hidden"
             >
                 {/* <div className="w-full text-center text-3xl mb-1 bg-linear-to-b from-cyan-500 to-indigo-400 text-transparent bg-clip-text">
                     Matchup Highlights
@@ -201,7 +208,7 @@ export function StreakDisplay({ streak }: { streak: { type: string; value: numbe
     }, [isWinStreak, streakValue]);
 
     return (
-        <div className="flex flex-row items-center justify-between gap-1 text-base text-indigo-200 w-full">
+        <div className="flex flex-row items-center justify-between gap-1 text-xl md:text-2xl text-indigo-200 w-full">
             Streak:
             <div className="flex flex-row items-center justify-end gap-1">
                 {isWinStreak ? (
@@ -209,7 +216,7 @@ export function StreakDisplay({ streak }: { streak: { type: string; value: numbe
                 ) : (
                     <AiOutlineCaretDown className={colorClass} />
                 )}
-                <span className={`text-base md:text-2xl lg:text-3xl font-bold ${colorClass}`}>
+                <span className={`text-xl md:text-2xl lg:text-3xl font-bold ${colorClass}`}>
                     {streakValue}
                 </span>
             </div>
@@ -242,11 +249,11 @@ export function RankDisplay({ rank }: { rank: number }) {
     }, [rank]);
 
     return (
-        <div className="flex flex-row items-center justify-between gap-1 text-base text-indigo-200 w-full">
+        <div className="flex flex-row items-center justify-between gap-1 text-xl md:text-2xl text-indigo-200 w-full">
             Rank:&nbsp;
             <div className="flex flex-row items-center justify-end gap-1">
-                {emoji && <span className="text-xl">{emoji}</span>}
-                <span className={`text-base md:text-2xl lg:text-3xl font-bold ${colorClass}`}>
+                {emoji && <span className="text-base md:text-xl lg:text-2xl">{emoji}</span>}
+                <span className={`text-xl md:text-2xl lg:text-3xl font-bold ${colorClass}`}>
                     {rank}
                 </span>
             </div>

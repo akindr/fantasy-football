@@ -5,7 +5,7 @@ function Home() {
     const isAuthenticated = authService.isAuthenticated();
 
     return (
-        <div className="py-2 px-4 md:p-4 text-4xl font-strike flex flex-col items-center justify-start h-full w-full overflow-y-auto bg-slate-100">
+        <div className="py-2 px-4 md:p-4 text-4xl font-strike flex flex-col items-center justify-start h-full w-full overflow-y-auto">
             <img src="/logo-transparent.png" alt="League logo" className="w-2/3 object-cover" />
             <div className="text-xl md:text-2xl font-think-loved text-center">
                 <p className="mb-8">

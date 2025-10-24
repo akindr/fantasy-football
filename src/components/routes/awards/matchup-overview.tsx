@@ -30,12 +30,12 @@ export const MatchupOverview = ({ award }: { award: Award }) => {
                 style={styles}
                 ref={ref}
                 className="absolute left-0 bottom-12 lg:bottom-[120px] clip-polygon flex flex-col items-start bg-linear-45 from-indigo-500 from-25% to-indigo-700 to-90% 
-            pr-8 pb-2 pt-4 pl-2 lg:pr-[100px] lg:py-6 lg:pl-8 max-w-[90vw] border-b-12 lg:border-b-24 border-indigo-400"
+            pr-8 pb-4 pt-6 pl-3 lg:pr-[100px] lg:py-6 lg:pl-8 max-w-[90vw] border-b-12 lg:border-b-24 border-indigo-400"
             >
-                <div className="text-4xl lg:text-6xl text-slate-100 mb-1 lg:mb-4">
+                <div className="text-5xl lg:text-6xl text-slate-100 mb-1 lg:mb-4">
                     {award.award.title}
                 </div>
-                <div className="text-base lg:text-xl text-slate-300 font-artlab-medium">
+                <div className="text-xl lg:text-2xl text-slate-300 font-artlab-medium">
                     {award.award.description}
                 </div>
             </animated.div>
