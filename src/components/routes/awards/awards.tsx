@@ -232,7 +232,7 @@ export const MatchupPlayers = ({ matchup }: { matchup: TransformedMatchup }) => 
                                         <span className="text-sm font-medium tabular-nums text-gray-800">
                                             {player.selectedPosition || player.position}
                                         </span>
-                                        <span className="text-base text-gray-900 truncate">
+                                        <span className="text-base text-gray-200 truncate">
                                             {player.name}
                                         </span>
                                         <span className="text-base font-semibold text-right tabular-nums">
@@ -285,7 +285,7 @@ export const MatchupPlayers = ({ matchup }: { matchup: TransformedMatchup }) => 
                                         <span className="text-sm font-medium tabular-nums text-gray-800">
                                             {player.selectedPosition || player.position}
                                         </span>
-                                        <span className="text-base text-gray-900 truncate">
+                                        <span className="text-base text-gray-200 truncate">
                                             {player.name}
                                         </span>
                                         <span className="text-base font-semibold text-right tabular-nums">

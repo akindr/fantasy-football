@@ -331,12 +331,24 @@ function getApp(
                 }
 
                 const matchesFeaturingTeams = [];
+                const currentYear = new Date().getFullYear().toString();
 
                 for (const year of LEAGUE_YEARS) {
-                    const yearMatchups = (await databaseService.get(
-                        'historical-data',
-                        `matchups-${year}`
-                    )) as HistoricalYearData;
+                    let yearMatchups: HistoricalYearData | null = null;
+
+                    if (year === currentYear) {
+                        yearMatchups = await yahooGateway.getMatchupsForYear(req, res, year);
+                    } else {
+                        yearMatchups = (await databaseService.get(
+                            'historical-data',
+                            `matchups-${year}`
+                        )) as HistoricalYearData | null;
+                    }
+
+                    if (!yearMatchups) {
+                        logger.warn(`No matchup data found for year ${year}, skipping`);
+                        continue;
+                    }
 
                     const matchupsForTheYear = [];
 
@@ -364,7 +376,7 @@ function getApp(
                                     marginOfVictory: Math.abs(
                                         matchup.team1.points - matchup.team2.points
                                     ),
-                                    isPlayoffGame: weekIdx + 1 >= 14,
+                                    isPlayoffGame: weekIdx + 1 > 14,
                                     ...matchup,
                                     week: weekIdx + 1, // Previous json blob didn't have week
                                 });

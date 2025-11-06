@@ -21,7 +21,7 @@ export const TeamScoreboard = ({ team, isWinner, highlightPlayers = [] }: TeamSc
         to:
             isInView && isWinner
                 ? async next => {
-                      await next({ scale: 1, config: { tension: 300, friction: 12 } });
+                      await next({ scale: 1, delay: 800, config: { tension: 300, friction: 12 } });
                   }
                 : { scale: 0 },
     });
