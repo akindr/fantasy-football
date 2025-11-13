@@ -40,7 +40,8 @@ export type FigPrediction = {
 
 export type GossipCornerData = {
     week: number;
-    predictions: [FigPrediction, FigPrediction];
+    subtitle: string;
+    predictions: FigPrediction[];
     updatedAt?: string;
 };
 

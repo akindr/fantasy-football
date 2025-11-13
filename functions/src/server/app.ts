@@ -140,6 +140,13 @@ function getApp(
                 res.status(400).json({ error: 'week is required query parameter' });
                 return;
             }
+
+            const hasAwards = await databaseService.checkForDoc('awards', `week-${week}-`);
+            if (!hasAwards) {
+                res.status(404).json({ error: 'No awards found for this week' });
+                return;
+            }
+
             const matchups = await yahooGateway.getMatchupsWithStandingsData(req, res);
             const awards: Award[] = [];
 
@@ -323,7 +330,11 @@ function getApp(
         firebaseAuthMiddleware,
         async (req: express.Request, res: express.Response) => {
             try {
-                const { week, predictions } = req.body as GossipCornerData;
+                const {
+                    week,
+                    predictions,
+                    subtitle = 'OMG you guys!!!',
+                } = req.body as GossipCornerData;
 
                 if (typeof week !== 'number' || Number.isNaN(week)) {
                     res.status(400).json({
@@ -339,26 +350,11 @@ function getApp(
                     return;
                 }
 
-                for (let i = 0; i < predictions.length; i++) {
-                    const prediction = predictions[i];
-                    if (
-                        !prediction ||
-                        typeof prediction.text !== 'string' ||
-                        prediction.text.trim() === '' ||
-                        typeof prediction.imageURL !== 'string' ||
-                        prediction.imageURL.trim() === ''
-                    ) {
-                        res.status(400).json({
-                            error: `prediction at index ${i} is missing required fields (text, imageURL)`,
-                        });
-                        return;
-                    }
-                }
-
                 const doc = `gossip-${week}`;
                 const payload: GossipCornerData = {
                     week,
-                    predictions: [predictions[0], predictions[1]],
+                    subtitle,
+                    predictions,
                     updatedAt: new Date().toISOString(),
                 };
 

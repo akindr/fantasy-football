@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { animated, useInView, useSpring } from '@react-spring/web';
 import { useQuery } from '@tanstack/react-query';
 import Markdown from 'react-markdown';
@@ -10,6 +10,29 @@ type FigsGossipCornerProps = {
 };
 
 type GossipPrediction = GossipCornerData['predictions'][number];
+
+const CATCH_PHRASES = [
+    'OMG!',
+    'You guys!!',
+    'Spill the kibble!',
+    'NO TAIL!',
+    'Paws up, people!',
+    'Just in!',
+    'Sniffed it out!',
+    'Wiggle wiggle!!',
+    'BUTT SNIFF`D!',
+    'Bark, bark, bark!',
+    'Trust the floof!',
+    'Nuh-uh!',
+    'Zoomies activated!',
+    'Low rider knows!',
+    'Heard that!',
+    'Hot dog!',
+    'Must sniff-TV!',
+    'The drama!',
+    'OH HECK!',
+    'Blep!',
+];
 
 const PredictionSlide: React.FC<{
     prediction: GossipPrediction;
@@ -30,23 +53,27 @@ const PredictionSlide: React.FC<{
         },
     });
 
+    const phrase = useMemo(() => {
+        return CATCH_PHRASES[Math.floor(Math.random() * CATCH_PHRASES.length)];
+    }, []);
+
     return (
         <div className="h-full w-full relative snap-start bg-black text-white overflow-hidden">
             <img
                 src={prediction.imageURL}
                 className="w-full h-full object-cover mask-alpha mask-r-from-black mask-r-from-50% mask-r-to-transparent"
-                alt={`Fig's Gossip Corner prediction ${index + 1}`}
+                alt={`Fig's Gossip Corner (${index + 1})`}
             />
             <animated.div
                 style={styles}
                 ref={ref}
-                className="absolute left-0 bottom-12 lg:bottom-[120px] clip-polygon flex flex-col items-start bg-linear-45 from-teal-500 from-25% to-indigo-500 to-90% 
-            pr-6 pb-4 pt-6 pl-4 lg:pr-[100px] lg:py-6 lg:pl-8 max-w-[90vw] border-b-12 lg:border-b-24 border-teal-400 gap-3"
+                className="absolute left-0 bottom-12 lg:bottom-[120px] clip-polygon flex flex-col items-start bg-linear-45 from-cyan-500 from-25% to-cyan-700 to-90% 
+            pr-6 pb-4 pt-6 pl-4 lg:pr-[100px] lg:py-6 lg:pl-8 max-w-[90vw] border-b-12 lg:border-b-24 border-cyan-400 gap-3"
             >
                 <div className="text-5xl lg:text-6xl  text-slate-100 uppercase tracking-wider">
-                    OMG!
+                    {phrase}
                 </div>
-                <div className="text-base lg:text-2xl text-slate-100 font-artlab-regular leading-relaxed markdown-content">
+                <div className="text-xl lg:text-2xl text-slate-100 font-artlab-regular leading-relaxed markdown-content pr-6">
                     <Markdown
                         components={{
                             p: props => <p className="mb-2 lg:mb-3 last:mb-0" {...props} />,
@@ -88,7 +115,7 @@ const IntroSlide: React.FC<{ subtitle: string }> = ({ subtitle }) => {
                 style={styles}
                 ref={ref}
                 className="absolute left-0 bottom-12 lg:bottom-[120px] clip-polygon flex flex-col items-start bg-linear-45 from-teal-500 from-25% to-indigo-500 to-90% 
-            pr-8 pb-2 pt-4 pl-2 lg:pr-[100px] lg:py-6 lg:pl-8 max-w-[90vw] border-b-12 lg:border-b-24 border-teal-400 gap-2"
+            pr-12 pb-2 pt-4 pl-2 lg:pr-[100px] lg:py-6 lg:pl-8 max-w-[90vw] border-b-12 lg:border-b-24 border-teal-400 gap-2"
             >
                 <div className="text-6xl lg:text-8xl text-slate-100 mb-1 lg:mb-4">
                     FIG&apos;S GOSSIP CORNER
@@ -108,35 +135,35 @@ export const FigsGossipCorner: React.FC<FigsGossipCornerProps> = ({ week }) => {
         enabled: () => Boolean(week),
     });
 
-    if (isLoading) {
-        return <IntroSlide subtitle="Fetching the latest rumors from Fig..." />;
-    }
+    const slides = useMemo(() => {
+        if (!data?.gossip) {
+            return [
+                <IntroSlide
+                    key="intro"
+                    subtitle="We couldn’t load this week’s gossip. Try again soon!"
+                />,
+            ];
+        }
 
-    if (isError) {
-        return <IntroSlide subtitle="We couldn’t load this week’s gossip. Try again soon!" />;
-    }
-
-    const hasGossip = Boolean(data?.gossip?.predictions?.length);
-    const slides = [
-        <IntroSlide
-            key="intro"
-            subtitle={
-                hasGossip ? 'OMG you guys!!!' : 'Fig`s doing a heck`n sleep, check back later!'
-            }
-        />,
-    ];
-
-    if (hasGossip && data?.gossip) {
-        data.gossip.predictions.forEach((prediction, index) => {
-            slides.push(
+        return [
+            <IntroSlide key="intro" subtitle={data.gossip.subtitle} />,
+            ...data.gossip.predictions.map((prediction, index) => (
                 <PredictionSlide
                     key={`prediction-${index}`}
                     prediction={prediction}
                     index={index}
                     week={week}
                 />
-            );
-        });
+            )),
+        ];
+    }, [data]);
+
+    if (isLoading) {
+        return <IntroSlide subtitle="Fetching the latest rumors from Fig..." />;
+    }
+
+    if (isError) {
+        return <IntroSlide subtitle="We couldn’t load this week’s gossip. Try again soon!" />;
     }
 
     return <>{slides}</>;

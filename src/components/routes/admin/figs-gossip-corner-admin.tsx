@@ -35,6 +35,7 @@ export const FigsGossipCornerAdmin: React.FC = () => {
         createPredictionState(),
         createPredictionState(),
     ]);
+    const [subtitle, setSubtitle] = useState<string>('');
     const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
     const fileInputRefs = [
@@ -265,20 +266,13 @@ export const FigsGossipCornerAdmin: React.FC = () => {
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-        const sanitizedPredictions = [
-            {
-                text: predictions[0].text.trim(),
-                imageURL: predictions[0].imageURL.trim(),
-            },
-            {
-                text: predictions[1].text.trim(),
-                imageURL: predictions[1].imageURL.trim(),
-            },
-        ] as const;
-
         const payload: GossipCornerData = {
+            subtitle,
             week,
-            predictions: [sanitizedPredictions[0], sanitizedPredictions[1]],
+            predictions: predictions.map(p => ({
+                text: p.text.trim(),
+                imageURL: p.imageURL.trim(),
+            })),
         };
 
         saveGossipMutation.mutate(payload);
@@ -304,6 +298,20 @@ export const FigsGossipCornerAdmin: React.FC = () => {
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="flex flex-col gap-2">
+                        <label className="block font-medium mb-2" htmlFor="subtitle">
+                            Subtitle
+                        </label>
+                        <input
+                            type="text"
+                            id="subtitle"
+                            value={subtitle}
+                            onChange={event => setSubtitle(event.target.value)}
+                            className="w-full px-3 py-2 bg-slate-600 text-white rounded border border-slate-500 focus:outline-none focus:border-blue-500"
+                            placeholder="Enter the subtitle"
+                            required
+                        />
+                    </div>
                     {predictions.map((prediction, index) => (
                         <div
                             key={index}
@@ -316,9 +324,6 @@ export const FigsGossipCornerAdmin: React.FC = () => {
                             </div>
 
                             <div>
-                                <label className="block font-medium mb-2" htmlFor={`text-${index}`}>
-                                    Prediction Text
-                                </label>
                                 <textarea
                                     id={`text-${index}`}
                                     value={prediction.text}
