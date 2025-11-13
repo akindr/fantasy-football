@@ -63,36 +63,36 @@ export const MatchupDetails = ({ award }: { award: Award }) => {
             <animated.div
                 ref={ref}
                 style={headlineStyles}
-                className="flex w-full flex-row justify-between items-center p-3 rounded-md gap-4 mb-4 text-3xl md:text-4xl lg:text-5xl 
-                bg-linear-to-l from-indigo-400/75 to-indigo-600/95 lg:bg-none text-white relative"
+                className="flex w-full flex-row justify-between items-center p-3 md:p-0 rounded-md gap-4 mb-4 md:grid md:items-start md:grid-cols-6 lg:grid-cols-7 text-3xl md:text-4xl lg:text-5xl 
+                bg-linear-to-l from-indigo-400/75 to-indigo-600/95 text-white relative max-h-full md:bg-none md:h-full"
             >
                 <TeamScoreboard
                     team={winner}
                     isWinner={true}
                     highlightPlayers={topScoringPlayers}
                 />
-                <div className="block lg:hidden flex-initial">
+                <div className="flex items-start justify-center flex-initial md:hidden">
                     <img src="/football-h2h.png" className="w-14 md:w-24 object-cover" />
                 </div>
-                <div className="hidden lg:flex flex-grow flex-col items-center justify-start h-full overflow-y-auto">
-                    <img
-                        src={award.award.imageURL}
-                        className="w-full max-w-[400px] rounded-md object-cover mb-4"
+                <div className="hidden rounded-md md:flex md:col-span-2 lg:col-span-3 flex-grow flex-col items-center justify-start overflow-y-auto h-full">
+                    <div
+                        className={`w-full flex basis-3/5 object-cover bg-cover bg-center`}
+                        style={{ backgroundImage: `url(${award.award.imageURL})` }}
                     />
                     {/* Desktop - matchup highlights  */}
-                    <div className="flex flex-col items-center justify-start bg-slate-800/75 p-2 rounded-md">
-                        <div className="w-full text-center text-3xl mb-1 text-indigo-200 text-shadow-sm">
+                    <div className="flex flex-col items-center justify-start bg-slate-800/75 p-2 basis-2/5">
+                        <div className="w-full text-center md:text-2xl lg:text-3xl mb-1 text-indigo-200 text-shadow-sm">
                             Matchup Highlights
                         </div>
 
-                        <div className="w-full text-left mb-4 text-xl font-artlab-regular">
+                        <div className="w-full text-left mb-4 text-base md:text-xl font-artlab-regular">
                             <Markdown>{award.award.blurb}</Markdown>
                         </div>
 
-                        <div className="text-3xl text-indigo-200 text-shadow-sm mb-1">
+                        <div className="text-2xl lg:text-3xl text-indigo-200 text-shadow-sm mb-1">
                             Clover&apos;s Fun Facts
                         </div>
-                        <div className="w-full text-left text-xl font-artlab-regular">
+                        <div className="w-full text-left text-base lg:text-xl font-artlab-regular">
                             <Markdown
                                 components={{
                                     ul: props => (
@@ -118,7 +118,7 @@ export const MatchupDetails = ({ award }: { award: Award }) => {
             {/* Scoring players; only on mobile. Desktop we use a different layout. */}
             <animated.div
                 style={scoringPlayersStyles}
-                className="flex flex-col items-center justify-start rounded-md p-3 bg-gray-500/75 text-white w-full overflow-y-auto lg:hidden"
+                className="flex flex-col items-center justify-start rounded-md p-3 bg-gray-500/75 text-white w-full overflow-y-auto md:hidden"
             >
                 {/* <div className="w-full text-center text-3xl mb-1 bg-linear-to-b from-cyan-500 to-indigo-400 text-transparent bg-clip-text">
                     Matchup Highlights

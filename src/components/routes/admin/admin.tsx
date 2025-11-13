@@ -39,17 +39,6 @@ export const Admin: React.FC = () => {
     useEffect(() => {
         const verifyAdminAccess = async () => {
             try {
-                // Wait for Firebase to restore the session
-                await googleAuthService.waitForAuth();
-
-                // Check if user is authenticated with Google
-                const isAuthenticated = await googleAuthService.isAuthenticated();
-                if (!isAuthenticated) {
-                    console.log('User is not authenticated');
-                    navigate('/');
-                    return;
-                }
-
                 // Check admin claim directly from Firebase token - NO API CALL NEEDED!
                 const isAdmin = await googleAuthService.isAdmin();
 

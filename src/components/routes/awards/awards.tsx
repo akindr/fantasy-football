@@ -182,7 +182,7 @@ export const AllAwardsContainer = ({ awards, week }: { awards: Award[]; week: nu
                 <AwardsDisplay key={award.matchup.id} award={award} />
             ))}
             <CloverTrends />
-            <FigsGossipCorner />
+            <FigsGossipCorner week={week} />
             <EndScreen week={week} />
         </div>
     );

@@ -7,7 +7,7 @@ import { authService } from '../services/auth-service';
 import { Home } from './routes/home';
 import { LeagueOverview } from './routes/league-overview';
 import { Awards } from './routes/awards/awards';
-import { Admin } from './routes/admin';
+import { Admin, FigsGossipCornerAdmin } from './routes/admin';
 
 const PrivateRoute: React.FC<{ children: React.ReactNode; redirectFrom: string }> = ({
     children,
@@ -44,7 +44,8 @@ export function RoutesContainer() {
                     </PrivateRoute>
                 }
             />
-            <Route path="/admin" element={<Admin />} />
+            <Route path="/admin/awards" element={<Admin />} />
+            <Route path="/admin/figs-gossip-corner" element={<FigsGossipCornerAdmin />} />
         </Routes>
     );
 }

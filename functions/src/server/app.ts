@@ -6,7 +6,7 @@ import dotenv from 'dotenv';
 import { GeminiGateway } from './services/gemini-gateway';
 import { HistoricalYearData, YahooGateway } from './services/yahoo-gateway';
 import { logger } from './services/logger';
-import type { AwardData, Award, TokenData } from './types';
+import type { AwardData, Award, GossipCornerData, TokenData } from './types';
 import { DatabaseService } from './services/database-service';
 import { StorageService } from './services/storage-service';
 import { firebaseAuthMiddleware } from './auth-middleware';
@@ -161,6 +161,30 @@ function getApp(
         }
     });
 
+    app.get(
+        `${prefix}/figs-gossip-corner`,
+        firebaseAuthMiddleware,
+        async (req: express.Request, res: express.Response) => {
+            try {
+                const { week } = req.query;
+                if (!week) {
+                    res.status(400).json({ error: 'week is required query parameter' });
+                    return;
+                }
+
+                const gossip = (await databaseService.get(
+                    'figs-gossip-corner',
+                    `gossip-${week}`
+                )) as GossipCornerData | null;
+
+                res.json({ gossip });
+            } catch (e) {
+                logger.error('Error fetching figs gossip corner data:', e);
+                res.status(500).json({ error: 'Unexpected error', original: e });
+            }
+        }
+    );
+
     // Debug endpoint to get available NFL games
     app.get(`${prefix}/games-debug`, async (req: express.Request, res: express.Response) => {
         if (!req.cookies.__session) {
@@ -293,6 +317,59 @@ function getApp(
                 res.status(200).send({ success: true });
             } catch (e) {
                 logger.error('Error writing to database:', e);
+                res.status(500).json({ error: 'Unexpected error', original: e });
+            }
+        }
+    );
+
+    app.post(
+        `${prefix}/data/figs-gossip-corner`,
+        firebaseAuthMiddleware,
+        async (req: express.Request, res: express.Response) => {
+            try {
+                const { week, predictions } = req.body as GossipCornerData;
+
+                if (typeof week !== 'number' || Number.isNaN(week)) {
+                    res.status(400).json({
+                        error: 'week is required in the request body and must be a number',
+                    });
+                    return;
+                }
+
+                if (!Array.isArray(predictions) || predictions.length !== 2) {
+                    res.status(400).json({
+                        error: 'predictions must be an array with exactly two entries',
+                    });
+                    return;
+                }
+
+                for (let i = 0; i < predictions.length; i++) {
+                    const prediction = predictions[i];
+                    if (
+                        !prediction ||
+                        typeof prediction.text !== 'string' ||
+                        prediction.text.trim() === '' ||
+                        typeof prediction.imageURL !== 'string' ||
+                        prediction.imageURL.trim() === ''
+                    ) {
+                        res.status(400).json({
+                            error: `prediction at index ${i} is missing required fields (text, imageURL)`,
+                        });
+                        return;
+                    }
+                }
+
+                const doc = `gossip-${week}`;
+                const payload: GossipCornerData = {
+                    week,
+                    predictions: [predictions[0], predictions[1]],
+                    updatedAt: new Date().toISOString(),
+                };
+
+                await databaseService.set('figs-gossip-corner', doc, payload);
+                res.status(200).send({ success: true });
+            } catch (e) {
+                logger.error('Error writing figs gossip corner data:', e);
                 res.status(500).json({ error: 'Unexpected error', original: e });
             }
         }

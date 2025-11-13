@@ -33,6 +33,17 @@ export type Award = {
     award: AwardData;
 };
 
+export type FigPrediction = {
+    text: string;
+    imageURL: string;
+};
+
+export type GossipCornerData = {
+    week: number;
+    predictions: [FigPrediction, FigPrediction];
+    updatedAt?: string;
+};
+
 export type TeamSummaryData = {
     players: TransformedPlayer[];
     name: string;

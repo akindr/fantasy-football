@@ -29,7 +29,7 @@ export const TeamScoreboard = ({ team, isWinner, highlightPlayers = [] }: TeamSc
     return (
         <div
             ref={ref}
-            className="flex flex-col flex-initial flex-grow  items-center justify-center lg:justify-start p-2 lg:p-4 rounded-md bg-slate-900/44 lg:bg-indigo-700/80 h-full relative"
+            className="flex-grow flex-initial basis-1/2 flex flex-col items-center justify-center p-2 rounded-md bg-slate-900/44 relative md:justify-start md:col-span-2 md:bg-indigo-700/80 md:p-4 "
         >
             {isWinner && (
                 <animated.div
@@ -59,7 +59,7 @@ export const TeamScoreboard = ({ team, isWinner, highlightPlayers = [] }: TeamSc
             {team.standings?.rank && <RankDisplay rank={team.standings.rank} />}
             {team.standings?.streak && <StreakDisplay streak={team.standings.streak} />}
             {team.players.length > 0 && (
-                <div className="hidden lg:flex flex-col items-center justify-start p-3 text-2xl w-full bg-slate-900/44 rounded-md">
+                <div className="hidden md:flex flex-col items-center justify-start p-3 text-2xl w-full bg-slate-900/44 rounded-md">
                     <div className="text-gray-100/96 text-2xl mb-2">
                         {isWinner ? 'The Winning Lineup' : 'The Smelly Stinkers'}
                     </div>
@@ -73,7 +73,7 @@ export const TeamScoreboard = ({ team, isWinner, highlightPlayers = [] }: TeamSc
                                 <div className="text-base text-indigo-200/66 w-14 flex-shrink-0 flex-initial">
                                     {player.selectedPosition}
                                 </div>
-                                <div className="text-base flex-grow">
+                                <div className="text-base flex-grow truncate">
                                     {player.name}
                                     {highlightPlayers.includes(player)
                                         ? isWinner
