@@ -81,7 +81,7 @@ export class YahooGateway {
         res.cookie('__session', updatedTokenData, {
             httpOnly: true,
             secure: true,
-            maxAge: 1000 * 60 * 60 * 24 * 1, // 1 days
+            maxAge: 1000 * 60 * 60 * 24 * 10, // 10 days - you can refresh the token later
             sameSite: 'none',
         });
     };
