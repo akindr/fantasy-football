@@ -15,6 +15,7 @@ import { StreakDisplay } from './matchup-details';
 import { CloverTrends } from './clovers-trends';
 import { FigsGossipCorner } from './figs-gossip-corner';
 import { EndScreen } from './end-screen';
+import { AuthenticationRedirectError } from '../../../services/yahoo-fantasy-service';
 
 const WEEK_OPTIONS = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
 const NO_WEEK_SELECTED = -1;
@@ -43,10 +44,21 @@ export const Awards: React.FC = () => {
     });
 
     useEffect(() => {
-        if (!error && awardsError) {
-            setError(awardsError.message);
+        if (!awardsError) {
+            return;
         }
-    }, [error, awardsError]);
+
+        if (awardsError instanceof AuthenticationRedirectError) {
+            return;
+        }
+
+        if (awardsError instanceof Error) {
+            setError(awardsError.message);
+            return;
+        }
+
+        setError('An unexpected error occurred.');
+    }, [awardsError]);
 
     const handleWeekChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const value = e.target.value;
@@ -117,7 +129,7 @@ export const Awards: React.FC = () => {
                     return (
                         <animated.div
                             style={style}
-                            className="absolute inset-0 flex flex-col justify-center items-center p-4"
+                            className="w-full h-full inset-0 flex flex-col justify-center items-center p-4"
                         >
                             <img
                                 src="/awards-logo.png"
