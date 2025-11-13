@@ -161,29 +161,25 @@ function getApp(
         }
     });
 
-    app.get(
-        `${prefix}/figs-gossip-corner`,
-        firebaseAuthMiddleware,
-        async (req: express.Request, res: express.Response) => {
-            try {
-                const { week } = req.query;
-                if (!week) {
-                    res.status(400).json({ error: 'week is required query parameter' });
-                    return;
-                }
-
-                const gossip = (await databaseService.get(
-                    'figs-gossip-corner',
-                    `gossip-${week}`
-                )) as GossipCornerData | null;
-
-                res.json({ gossip });
-            } catch (e) {
-                logger.error('Error fetching figs gossip corner data:', e);
-                res.status(500).json({ error: 'Unexpected error', original: e });
+    app.get(`${prefix}/figs-gossip-corner`, async (req: express.Request, res: express.Response) => {
+        try {
+            const { week } = req.query;
+            if (!week) {
+                res.status(400).json({ error: 'week is required query parameter' });
+                return;
             }
+
+            const gossip = (await databaseService.get(
+                'figs-gossip-corner',
+                `gossip-${week}`
+            )) as GossipCornerData | null;
+
+            res.json({ gossip });
+        } catch (e) {
+            logger.error('Error fetching figs gossip corner data:', e);
+            res.status(500).json({ error: 'Unexpected error', original: e });
         }
-    );
+    });
 
     // Debug endpoint to get available NFL games
     app.get(`${prefix}/games-debug`, async (req: express.Request, res: express.Response) => {
