@@ -1,5 +1,13 @@
 import { API_CONFIG } from '../config';
 import { googleAuthService } from './google-auth-service';
+import { authService } from './auth-service';
+
+export class AuthenticationRedirectError extends Error {
+    constructor(message = 'Redirecting to Yahoo login') {
+        super(message);
+        this.name = 'AuthenticationRedirectError';
+    }
+}
 
 export interface Team {
     team_id: string;
@@ -37,8 +45,24 @@ export class YahooFantasyService {
         });
         if (!response.ok) {
             const status = response.status;
-            if (status === 401) {
-                throw new Error('Unauthorized');
+            if (status === 401 || status === 403) {
+                if (typeof window !== 'undefined') {
+                    const { pathname, search, hash } = window.location;
+                    const redirectDestination = `${pathname}${search}${hash}`;
+                    if (pathname !== '/login' && pathname !== '/auth/callback') {
+                        try {
+                            sessionStorage.setItem(
+                                'redirectAfterLogin',
+                                redirectDestination || '/'
+                            );
+                        } catch (storageError) {
+                            console.warn('Failed to persist redirect path', storageError);
+                        }
+                        const authUrl = authService.getYahooAuthUrl();
+                        window.location.assign(authUrl);
+                    }
+                }
+                throw new AuthenticationRedirectError();
             }
             throw new Error(`Unexpected error, status: ${status}`);
         }
