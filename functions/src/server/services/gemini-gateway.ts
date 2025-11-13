@@ -106,13 +106,14 @@ Identify and present **five (5) critical, diagnostic facts** that explain *why* 
 
 ---
 
-**Analysis Criteria (You MUST prioritize facts that align with these categories to diagnose the result):**
+**Analysis Criteria (You MUST prioritize facts that align with these categories to diagnose the result. These are in no particular order of importance):**
 
 1.  **The Decisive Player Factor (The Hero/Goat):** Identify the single player whose score was the largest positive deviation (for the winner) or largest negative deviation (for the loser) from their team's average positional score, making them the most statistically responsible for the outcome.
 2.  **The Trend-Breaker:** Did the team with the superior momentum (streaks or recent point trend) win the game? If not, identify the key data point that explains how the underdog was able to break the trend.
 3.  **Positional Decisive Factor:** Identify the single position (QB, RB, WR, etc.) where the winning team's total score definitively crushed the losing team's score, making it the factual decisive factor for the final outcome.
 4.  **The O/U Performance Swing:** Compare the YTD Average Over/Under Performance of each team to their actual Over/Under Performance *this week*. Which team's efficiency swing (positive or negative) most directly determined the win?
 5.  **The Statistical Context:** Compare the final winning and losing scores to the **League Average Score** and the **Highest Score of the Season**. Was this matchup a high-scoring or low-scoring affair relative to the league landscape for that week?
+6. **Sit start decisions:** Identify the players who were benched (IsStarter: false) and the players who were started (IsStarter: true) and the difference in points between the two. Would the outcome have been different if the manager made a different decision?
 
 ---
 

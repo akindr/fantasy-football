@@ -261,6 +261,50 @@ export class YahooGateway {
         return matchupsByYear;
     }
 
+    async getMatchupsForYear(
+        req: express.Request,
+        res: express.Response,
+        year: string
+    ): Promise<HistoricalYearData> {
+        const yearConfig = OLD_LEAGUE_KEYS[year as keyof typeof OLD_LEAGUE_KEYS];
+        if (!yearConfig) {
+            throw new Error(`No league configuration found for year ${year}`);
+        }
+
+        const leagueId = yearConfig.leagueID;
+        const gameKey = yearConfig.gameID;
+        const leagueSpec = `${gameKey}.l.${leagueId}`;
+
+        const weeks = Array.from({ length: 18 }, (_, index) => index + 1);
+        const weeklyMatchups: WeeklyMatchups[] = [];
+
+        for (const week of weeks) {
+            const url = getUrl(`league/${leagueSpec}/scoreboard;week=${week}`);
+            try {
+                const response = await this._makeRequest(url, req, res);
+                const transformedMatchups = transformMatchups(response);
+                weeklyMatchups.push({
+                    week,
+                    matchups: transformedMatchups,
+                });
+            } catch (error) {
+                logger.warn(
+                    `Failed to fetch matchups for year ${year} week ${week}. Stopping further requests.`,
+                    error
+                );
+                break;
+            }
+        }
+
+        return {
+            year,
+            leagueId,
+            gameKey,
+            leagueSpec,
+            weeklyMatchups,
+        };
+    }
+
     // For now, unexposed. We can expose again if necessary. This helps get every matchup for each week of our league's history
     async getAllMatchups(req: express.Request, res: express.Response): Promise<HistoricalData> {
         const dataFilePath = path.join(__dirname, '../../../../data/historical-matchups.json');

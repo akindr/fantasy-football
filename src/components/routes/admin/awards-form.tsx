@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { googleAuthService } from '../../../services/google-auth-service';
 import { yahooFantasyService } from '../../../services/yahoo-fantasy-service';
@@ -34,6 +34,7 @@ export const AwardsForm: React.FC<AwardsFormProps> = ({
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [uploadedImageUrl, setUploadedImageUrl] = useState<string>('');
     const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
 
     // React Query mutation for creating an award
     const createAwardMutation = useMutation({
@@ -134,6 +135,20 @@ export const AwardsForm: React.FC<AwardsFormProps> = ({
         }
     };
 
+    const handleClearForm = () => {
+        setTitle('');
+        setDescription('');
+        setBlurb('');
+        setFunFacts('');
+        setSelectedFile(null);
+        setImagePreview(null);
+        setUploadedImageUrl('');
+        setIsUploading(false);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    };
+
     const handleImageUpload = async () => {
         if (!selectedFile) {
             return;
@@ -230,47 +245,50 @@ export const AwardsForm: React.FC<AwardsFormProps> = ({
                         />
                     </div>
 
-                    <label htmlFor="image" className="block font-medium mb-2">
-                        Upload Image
-                    </label>
-                    <div className="flex flex-row gap-2 items-start">
-                        <div className="mx-2 flex flex-col justify-center flex-0">
-                            <input
-                                id="image"
-                                type="file"
-                                accept="image/*"
-                                onChange={handleFileChange}
-                                className="w-full px-3 py-2 bg-slate-600 text-white rounded border border-slate-500 focus:outline-none focus:border-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
-                            />
-                            {imagePreview && (
-                                <>
-                                    <img
-                                        src={imagePreview}
-                                        alt="Preview"
-                                        className="max-w-xs max-h-48 rounded border border-slate-500"
-                                    />
-                                </>
-                            )}
-                        </div>
+                    <div>
+                        <label htmlFor="image" className="block font-medium mb-2">
+                            Upload Image
+                        </label>
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div className="flex flex-col gap-2">
+                                <input
+                                    id="image"
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleFileChange}
+                                    ref={fileInputRef}
+                                    className="w-full px-3 py-2 bg-slate-600 text-white rounded border border-slate-500 focus:outline-none focus:border-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+                                />
+                                {imagePreview && (
+                                    <>
+                                        <img
+                                            src={imagePreview}
+                                            alt="Preview"
+                                            className="max-w-xs max-h-48 rounded border border-slate-500"
+                                        />
+                                    </>
+                                )}
+                            </div>
 
-                        <div className="flex flex-col justify-center flex-1">
-                            <input
-                                id="imageurl"
-                                type="text"
-                                value={uploadedImageUrl}
-                                onChange={e => setUploadedImageUrl(e.target.value)}
-                                className="w-full px-3 py-2 bg-slate-600 text-white rounded border border-slate-500 focus:outline-none focus:border-blue-500 mb-2"
-                                placeholder="Enter image url"
-                                required
-                            />
+                            <div className="flex flex-col gap-2">
+                                <input
+                                    id="imageurl"
+                                    type="text"
+                                    value={uploadedImageUrl}
+                                    onChange={e => setUploadedImageUrl(e.target.value)}
+                                    className="w-full px-3 py-2 bg-slate-600 text-white rounded border border-slate-500 focus:outline-none focus:border-blue-500"
+                                    placeholder="Enter image url"
+                                    required
+                                />
 
-                            <Button
-                                type="button"
-                                disabled={isUploading || !selectedFile}
-                                onClick={handleImageUpload}
-                            >
-                                {isUploading ? 'Uploading...' : 'Upload Image'}
-                            </Button>
+                                <Button
+                                    type="button"
+                                    disabled={isUploading || !selectedFile}
+                                    onClick={handleImageUpload}
+                                >
+                                    {isUploading ? 'Uploading...' : 'Upload Image'}
+                                </Button>
+                            </div>
                         </div>
                     </div>
 
@@ -304,25 +322,30 @@ export const AwardsForm: React.FC<AwardsFormProps> = ({
                 </form>
             </div>
 
-            <Button
-                type="button"
-                onClick={async () => {
-                    const idToken = await googleAuthService.getIdToken();
-                    fetch(
-                        `${API_CONFIG.apiUri}/data/awards?week=${week}&matchup=${matchups?.[selectedMatchupIndex]?.id}`,
-                        {
-                            headers: {
-                                Authorization: `Bearer ${idToken}`,
-                            },
-                        }
-                    )
-                        .then(response => response.json())
-                        .then(data => console.log(data))
-                        .catch(error => console.error('Error testing admin endpoint:', error));
-                }}
-            >
-                Get Awards
-            </Button>
+            <div className="flex gap-2">
+                <Button
+                    type="button"
+                    onClick={async () => {
+                        const idToken = await googleAuthService.getIdToken();
+                        fetch(
+                            `${API_CONFIG.apiUri}/data/awards?week=${week}&matchup=${matchups?.[selectedMatchupIndex]?.id}`,
+                            {
+                                headers: {
+                                    Authorization: `Bearer ${idToken}`,
+                                },
+                            }
+                        )
+                            .then(response => response.json())
+                            .then(data => console.log(data))
+                            .catch(error => console.error('Error testing admin endpoint:', error));
+                    }}
+                >
+                    Get Awards
+                </Button>
+                <Button type="button" onClick={handleClearForm}>
+                    Clear Form
+                </Button>
+            </div>
         </div>
     );
 };
