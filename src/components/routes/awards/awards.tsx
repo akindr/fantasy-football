@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTransition, animated } from '@react-spring/web';
+import { useSearchParams } from 'react-router-dom';
 
 import type { Award } from '../../../../functions/src/server/types';
 import { AwardsDisplay } from './awards-display';
@@ -16,6 +17,7 @@ import { FigsGossipCorner } from './figs-gossip-corner';
 import { EndScreen } from './end-screen';
 
 const WEEK_OPTIONS = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+const NO_WEEK_SELECTED = -1;
 
 type ViewState =
     | { type: 'home' }
@@ -23,7 +25,8 @@ type ViewState =
     | { type: 'no-awards'; week: number };
 
 export const Awards: React.FC = () => {
-    const [week, setWeek] = useState<number | undefined>(undefined);
+    const [searchParams, setSearchParams] = useSearchParams();
+    const week = parseInt(searchParams.get('week') ?? NO_WEEK_SELECTED.toString());
     const [error, setError] = useState<string | null>(null);
     const isFirstRender = useRef(true);
 
@@ -35,7 +38,7 @@ export const Awards: React.FC = () => {
         queryKey: ['awards', week],
         refetchOnWindowFocus: false,
         enabled: () => {
-            return week !== undefined;
+            return week !== NO_WEEK_SELECTED;
         },
     });
 
@@ -46,14 +49,23 @@ export const Awards: React.FC = () => {
     }, [error, awardsError]);
 
     const handleWeekChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setWeek(Number(e.target.value));
+        const value = e.target.value;
+        const nextParams = new URLSearchParams(searchParams);
+
+        if (value) {
+            nextParams.set('week', value);
+        } else {
+            nextParams.delete('week');
+        }
+
+        setSearchParams(nextParams);
     };
 
     // Determine current view state
     const viewState: ViewState | null = useMemo(() => {
         if (isLoading) return null; // Don't transition while loading
 
-        if (week === undefined) {
+        if (week === NO_WEEK_SELECTED) {
             return { type: 'home' };
         }
 
@@ -81,7 +93,9 @@ export const Awards: React.FC = () => {
     });
 
     const handleReset = () => {
-        setWeek(undefined);
+        const nextParams = new URLSearchParams(searchParams);
+        nextParams.delete('week');
+        setSearchParams(nextParams);
     };
 
     return (
@@ -91,7 +105,9 @@ export const Awards: React.FC = () => {
                 message={error}
                 onDismiss={() => {
                     setError(null);
-                    setWeek(undefined);
+                    const nextParams = new URLSearchParams(searchParams);
+                    nextParams.delete('week');
+                    setSearchParams(nextParams);
                 }}
             />
             {transitions((style, item) => {
