@@ -5,14 +5,10 @@ import { useSearchParams } from 'react-router-dom';
 
 import type { Award } from '../../../../functions/src/server/types';
 import { AwardsDisplay } from './awards-display';
-import { TransformedMatchup } from '../../../../functions/src/server/data-mappers';
 import { LoadingSpinner } from '../../shared/loading-spinner';
 import { ErrorDialog } from '../../shared/error-dialog';
 import { AiOutlineCloseCircle } from 'react-icons/ai';
-import { numberFormatter } from '../../../utils/number-utils';
-import { RankDisplay } from './matchup-details';
-import { StreakDisplay } from './matchup-details';
-import { CloverTrends } from './clovers-trends';
+// import { CloverTrends } from './clovers-trends';
 import { FigsGossipCorner } from './figs-gossip-corner';
 import { EndScreen } from './end-screen';
 import { AuthenticationRedirectError } from '../../../services/yahoo-fantasy-service';
@@ -36,7 +32,7 @@ export const Awards: React.FC = () => {
         isLoading,
         error: awardsError,
     } = useQuery<{ awards: Award[] }>({
-        queryKey: ['awards', week],
+        queryKey: ['awards', { week }],
         refetchOnWindowFocus: false,
         enabled: () => {
             return week !== NO_WEEK_SELECTED;
@@ -209,123 +205,9 @@ export const AllAwardsContainer = ({ awards, week }: { awards: Award[]; week: nu
             {awards.map(award => (
                 <AwardsDisplay key={award.matchup.id} award={award} />
             ))}
-            <CloverTrends />
+            {/* <CloverTrends /> */}
             <FigsGossipCorner week={week} />
             <EndScreen week={week} />
-        </div>
-    );
-};
-
-export const MatchupPlayers = ({ matchup }: { matchup: TransformedMatchup }) => {
-    return (
-        <div className="h-full w-full snap-start overflow-y-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Team 1 Column */}
-                <div className="bg-slate-400/40 rounded-3xl p-4 flex flex-col gap-4">
-                    {/* Header: Team logo + name */}
-                    <div className="flex flex-col items-center gap-2">
-                        <img src={matchup.team1.logo} className="w-16 h-16 rounded-full" />
-                        <span className="text-2xl font-think-loved text-center">
-                            {matchup.team1.name}
-                        </span>
-                    </div>
-                    {/* Total points */}
-                    <div className="flex flex-col items-center justify-center">
-                        <span className="text-5xl font-semibold">
-                            {numberFormatter.format(matchup.team1.points)}
-                        </span>
-                        <span className="text-xl text-gray-300">
-                            {numberFormatter.format(matchup.team1.pointsProjected)} Projected
-                        </span>
-                        <span className="text-xl text-gray-100">
-                            {matchup.team1.standings?.wins} - {matchup.team1.standings?.losses}
-                        </span>
-                    </div>
-                    {matchup.team1.standings?.rank && (
-                        <RankDisplay rank={matchup.team1.standings.rank} />
-                    )}
-                    {matchup.team1.standings?.streak && (
-                        <StreakDisplay streak={matchup.team1.standings.streak} />
-                    )}
-                    {/* Players list */}
-                    <div className="flex flex-col divide-y divide-white/50">
-                        {matchup.team1.players?.map(player => {
-                            const points =
-                                player.stats?.points != null
-                                    ? numberFormatter.format(player.stats.points)
-                                    : '-';
-                            return (
-                                <div key={player.playerId} className="py-2">
-                                    <div className="grid grid-cols-[3rem_1fr_auto] items-center gap-3">
-                                        <span className="text-sm font-medium tabular-nums text-gray-800">
-                                            {player.selectedPosition || player.position}
-                                        </span>
-                                        <span className="text-base text-gray-200 truncate">
-                                            {player.name}
-                                        </span>
-                                        <span className="text-base font-semibold text-right tabular-nums">
-                                            {points}
-                                        </span>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-
-                {/* Team 2 Column */}
-                <div className="bg-slate-400/40 rounded-3xl p-4 flex flex-col gap-4">
-                    {/* Header: Team logo + name */}
-                    <div className="flex flex-col items-center gap-2">
-                        <img src={matchup.team2.logo} className="w-16 h-16 rounded-full" />
-                        <span className="text-2xl font-think-loved text-center">
-                            {matchup.team2.name}
-                        </span>
-                    </div>
-                    {/* Total points */}
-                    <div className="flex flex-col items-center justify-center">
-                        <span className="text-5xl font-semibold">
-                            {numberFormatter.format(matchup.team2.points)}
-                        </span>
-                        <span className="text-xl text-gray-300">
-                            {numberFormatter.format(matchup.team2.pointsProjected)} Projected
-                        </span>
-                        <span className="text-xl text-gray-100">
-                            {matchup.team2.standings?.wins} - {matchup.team2.standings?.losses}
-                        </span>
-                    </div>
-                    {matchup.team2.standings?.rank && (
-                        <RankDisplay rank={matchup.team2.standings.rank} />
-                    )}
-                    {matchup.team2.standings?.streak && (
-                        <StreakDisplay streak={matchup.team2.standings.streak} />
-                    )}
-                    {/* Players list */}
-                    <div className="flex flex-col divide-y divide-white/50">
-                        {matchup.team2.players?.map(player => {
-                            const points =
-                                player.stats?.points != null
-                                    ? numberFormatter.format(player.stats.points)
-                                    : '-';
-                            return (
-                                <div key={player.playerId} className="py-2">
-                                    <div className="grid grid-cols-[3rem_1fr_auto] items-center gap-3">
-                                        <span className="text-sm font-medium tabular-nums text-gray-800">
-                                            {player.selectedPosition || player.position}
-                                        </span>
-                                        <span className="text-base text-gray-200 truncate">
-                                            {player.name}
-                                        </span>
-                                        <span className="text-base font-semibold text-right tabular-nums">
-                                            {points}
-                                        </span>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-            </div>
         </div>
     );
 };

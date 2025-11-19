@@ -4,7 +4,7 @@ import { yahooFantasyService } from '../../services/yahoo-fantasy-service';
 
 const makeRequest: QueryFunction = async ({ queryKey }) => {
     // todo - this is just a generic api not yahoo
-    return yahooFantasyService.query(queryKey as string[]);
+    return yahooFantasyService.query(queryKey as (string | Record<string, string | number>)[]);
 };
 
 const queryClient = new QueryClient({

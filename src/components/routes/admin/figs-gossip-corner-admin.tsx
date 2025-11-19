@@ -53,7 +53,7 @@ export const FigsGossipCornerAdmin: React.FC = () => {
     } = useQuery<{
         gossip: GossipCornerData | null;
     }>({
-        queryKey: ['figs-gossip-corner', week],
+        queryKey: ['figs-gossip-corner', { week }],
         refetchOnWindowFocus: false,
         enabled: () => week !== undefined,
     });
@@ -70,7 +70,7 @@ export const FigsGossipCornerAdmin: React.FC = () => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({
-                queryKey: ['figs-gossip-corner', week],
+                queryKey: ['figs-gossip-corner', { week }],
             });
             setStatusMessage('Predictions saved successfully!');
         },

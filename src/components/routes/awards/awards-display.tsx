@@ -1,7 +1,6 @@
 import React from 'react';
 import type { Award } from '../../../../functions/src/server/types';
 import { MatchupOverview } from './matchup-overview';
-// import { MatchupPlayers } from './awards';
 import { MatchupDetails } from './matchup-details';
 
 export const AwardsDisplay = ({ award }: { award: Award }) => {
@@ -21,10 +20,6 @@ export const AwardsDisplay = ({ award }: { award: Award }) => {
             >
                 <MatchupDetails award={award} />
             </div>
-            {/* TODO: What else can we show? */}
-            {/* <div className="h-full w-full p-4 snap-start bg-linear-to-b from-slate-600 through-slate-500 to-black overflow-y-auto">
-                <MatchupPlayers matchup={award.matchup} />
-            </div> */}
         </>
     );
 };

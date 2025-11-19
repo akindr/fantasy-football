@@ -58,12 +58,17 @@ const PredictionSlide: React.FC<{
     }, []);
 
     return (
-        <div className="h-full w-full relative snap-start bg-black text-white overflow-hidden">
-            <img
-                src={prediction.imageURL}
-                className="w-full h-full object-cover mask-alpha mask-r-from-black mask-r-from-50% mask-r-to-transparent"
-                alt={`Fig's Gossip Corner (${index + 1})`}
-            />
+        <div className="relative h-full w-full snap-start bg-black text-white overflow-hidden">
+            <div className="absolute inset-0 lg:static lg:h-full">
+                <div className="relative h-5/7 w-full min-h-[220px] lg:h-full lg:min-h-0">
+                    <img
+                        src={prediction.imageURL}
+                        className="h-full w-full object-cover lg:mask-alpha lg:mask-r-from-black lg:mask-r-from-50% lg:mask-r-to-transparent"
+                        alt={`Fig's Gossip Corner (${index + 1})`}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/40 to-black lg:hidden" />
+                </div>
+            </div>
             <animated.div
                 style={styles}
                 ref={ref}
@@ -73,7 +78,7 @@ const PredictionSlide: React.FC<{
                 <div className="text-5xl lg:text-6xl  text-slate-100 uppercase tracking-wider">
                     {phrase}
                 </div>
-                <div className="text-xl lg:text-2xl text-slate-100 font-artlab-regular leading-relaxed markdown-content pr-6">
+                <div className="text-base lg:text-2xl text-slate-100 font-artlab-regular leading-relaxed markdown-content pr-6">
                     <Markdown
                         components={{
                             p: props => <p className="mb-2 lg:mb-3 last:mb-0" {...props} />,
@@ -130,7 +135,7 @@ const IntroSlide: React.FC<{ subtitle: string }> = ({ subtitle }) => {
 
 export const FigsGossipCorner: React.FC<FigsGossipCornerProps> = ({ week }) => {
     const { data, isLoading, isError } = useQuery<{ gossip: GossipCornerData | null }>({
-        queryKey: ['figs-gossip-corner', week],
+        queryKey: ['figs-gossip-corner', { week }],
         refetchOnWindowFocus: false,
         enabled: () => Boolean(week),
     });
