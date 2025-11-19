@@ -1,10 +1,11 @@
 import React, { useRef, useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { googleAuthService } from '../../../services/google-auth-service';
 import { yahooFantasyService } from '../../../services/yahoo-fantasy-service';
 import { API_CONFIG, BASE_URL } from '../../../config';
 import { TransformedMatchup } from '../../../../functions/src/server/data-mappers';
 import { Button } from '../../shared/buttons';
+import { AwardData } from '../../../../functions/src/server/types';
 
 type MatchupResponse = {
     imageData: string;
@@ -15,17 +16,9 @@ interface AwardsFormProps {
     week: number;
     matchups: MatchupResponse[] | undefined;
     selectedMatchupIndex: number;
-    onInsightsLoaded: (insights: string) => void;
-    onThisYearInsightsLoaded: (insights: string) => void;
 }
 
-export const AwardsForm: React.FC<AwardsFormProps> = ({
-    week,
-    matchups,
-    selectedMatchupIndex,
-    onInsightsLoaded,
-    onThisYearInsightsLoaded,
-}) => {
+export const AwardsForm: React.FC<AwardsFormProps> = ({ week, matchups, selectedMatchupIndex }) => {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [blurb, setBlurb] = useState('');
@@ -35,6 +28,18 @@ export const AwardsForm: React.FC<AwardsFormProps> = ({
     const [uploadedImageUrl, setUploadedImageUrl] = useState<string>('');
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+    // React Query for getting awards
+    const { refetch: refetchAwards, isFetching: isFetchingAwards } = useQuery<AwardData>({
+        queryKey: [
+            'data',
+            'awards',
+            matchups?.[selectedMatchupIndex]
+                ? { week, matchup: matchups[selectedMatchupIndex]?.id }
+                : {},
+        ],
+        enabled: false, // Only fetch when manually triggered
+    });
 
     // React Query mutation for creating an award
     const createAwardMutation = useMutation({
@@ -87,29 +92,6 @@ export const AwardsForm: React.FC<AwardsFormProps> = ({
 
         // @ts-expect-error server typing TBD
         createAwardMutation.mutate(awardData);
-    };
-
-    const getMatchupInsights = async () => {
-        if (!matchups || !matchups[selectedMatchupIndex]) {
-            return;
-        }
-        const insightData = await yahooFantasyService.makeRequest(
-            `${API_CONFIG.apiUri}/admin/insights?matchup=${selectedMatchupIndex + 1}&team1=${matchups?.[selectedMatchupIndex]?.team1?.manager?.id}&team2=${matchups?.[selectedMatchupIndex]?.team2?.manager?.id}`,
-            {
-                method: 'GET',
-            }
-        );
-        onInsightsLoaded(insightData.insights);
-    };
-
-    const getThisYearMatchupInsights = async () => {
-        if (!matchups || !matchups[selectedMatchupIndex]) {
-            return;
-        }
-        const insightData = await yahooFantasyService.makeRequest(
-            `${API_CONFIG.apiUri}/admin/this-year-insights?week=${week}&team1=${matchups?.[selectedMatchupIndex]?.team1.id}&team2=${matchups?.[selectedMatchupIndex]?.team2.id}`
-        );
-        onThisYearInsightsLoaded(insightData.insights);
     };
 
     const getLeagueDebug = async () => {
@@ -184,9 +166,8 @@ export const AwardsForm: React.FC<AwardsFormProps> = ({
     };
 
     return (
-        <div className="bg-slate-800 rounded-lg p-6 mb-4 col-span-3">
-            <h2 className="text-gray-300 mb-2 font-bold text-2xl">Awards Creator</h2>
-            <div className="p-4 bg-slate-700 rounded mb-4">
+        <>
+            <div className="bg-slate-700 mb-4">
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
                         <label htmlFor="title" className="block font-medium mb-2">
@@ -300,11 +281,25 @@ export const AwardsForm: React.FC<AwardsFormProps> = ({
                         >
                             {createAwardMutation.isPending ? 'Creating...' : 'Create Award'}
                         </Button>
-                        <Button type="button" onClick={getMatchupInsights}>
-                            Historic Insights
+                        <Button
+                            type="button"
+                            onClick={async () => {
+                                handleClearForm();
+                                const updatedAwards = await refetchAwards();
+                                setTitle(updatedAwards.data?.title || '');
+                                setDescription(updatedAwards.data?.description || '');
+                                setBlurb(updatedAwards.data?.blurb || '');
+                                setFunFacts(updatedAwards.data?.funFacts || '');
+                                setUploadedImageUrl(updatedAwards.data?.imageURL || '');
+                            }}
+                            disabled={
+                                isFetchingAwards || !matchups || !matchups[selectedMatchupIndex]
+                            }
+                        >
+                            {isFetchingAwards ? 'Loading...' : 'Get Awards'}
                         </Button>
-                        <Button type="button" onClick={getThisYearMatchupInsights}>
-                            Current Year Insights
+                        <Button type="button" onClick={handleClearForm}>
+                            Clear Form
                         </Button>
                         <Button type="button" onClick={getLeagueDebug}>
                             League Debug
@@ -321,31 +316,6 @@ export const AwardsForm: React.FC<AwardsFormProps> = ({
                     )}
                 </form>
             </div>
-
-            <div className="flex gap-2">
-                <Button
-                    type="button"
-                    onClick={async () => {
-                        const idToken = await googleAuthService.getIdToken();
-                        fetch(
-                            `${API_CONFIG.apiUri}/data/awards?week=${week}&matchup=${matchups?.[selectedMatchupIndex]?.id}`,
-                            {
-                                headers: {
-                                    Authorization: `Bearer ${idToken}`,
-                                },
-                            }
-                        )
-                            .then(response => response.json())
-                            .then(data => console.log(data))
-                            .catch(error => console.error('Error testing admin endpoint:', error));
-                    }}
-                >
-                    Get Awards
-                </Button>
-                <Button type="button" onClick={handleClearForm}>
-                    Clear Form
-                </Button>
-            </div>
-        </div>
+        </>
     );
 };
