@@ -40,11 +40,7 @@ export const Awards: React.FC = () => {
     });
 
     useEffect(() => {
-        if (!awardsError) {
-            return;
-        }
-
-        if (awardsError instanceof AuthenticationRedirectError) {
+        if (!awardsError || awardsError instanceof AuthenticationRedirectError) {
             return;
         }
 

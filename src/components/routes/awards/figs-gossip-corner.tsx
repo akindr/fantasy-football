@@ -66,7 +66,7 @@ const PredictionSlide: React.FC<{
                         className="h-full w-full object-cover lg:mask-alpha lg:mask-r-from-black lg:mask-r-from-50% lg:mask-r-to-transparent"
                         alt={`Fig's Gossip Corner (${index + 1})`}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/40 to-black lg:hidden" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/10 via-90% to-black lg:hidden" />
                 </div>
             </div>
             <animated.div
@@ -115,7 +115,7 @@ const IntroSlide: React.FC<{ subtitle: string }> = ({ subtitle }) => {
     });
 
     return (
-        <div className="h-full w-full snap-start overflow-hidden bg-[url(/figs-gossip-corner.png)] bg-cover bg-center bg-no-repeat relative">
+        <div className="h-full w-full snap-start overflow-hidden bg-[url(/figs-playoffs.png)] bg-cover bg-center bg-no-repeat relative">
             <animated.div
                 style={styles}
                 ref={ref}

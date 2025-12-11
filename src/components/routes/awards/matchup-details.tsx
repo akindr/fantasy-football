@@ -125,7 +125,13 @@ export const MatchupDetails = ({ award }: { award: Award }) => {
                 </div> */}
 
                 <div className="w-full text-left mb-4 text-base font-artlab-regular">
-                    <Markdown>{award.award.blurb}</Markdown>
+                    <Markdown
+                        components={{
+                            strong: props => <strong className="font-artlab-medium" {...props} />,
+                        }}
+                    >
+                        {award.award.blurb}
+                    </Markdown>
                 </div>
 
                 <div className="flex flex-row items-center justify-start w-full text-left">
@@ -178,6 +184,7 @@ export const MatchupDetails = ({ award }: { award: Award }) => {
                             ol: props => <ol className="mt-4" {...props} />,
                             li: props => <li className="mb-1" {...props} />,
                             p: props => <p className="text-lg" {...props} />,
+                            strong: props => <strong className="font-artlab-medium" {...props} />,
                         }}
                     >
                         {award.award.funFacts}

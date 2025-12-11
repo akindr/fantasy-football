@@ -1,7 +1,7 @@
 import Busboy from 'busboy';
 import type { Request } from 'firebase-functions/v2/https';
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 5 MB
 
 /**
  * Handles multipart/form-data uploads using Busboy.
