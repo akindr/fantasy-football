@@ -6,7 +6,11 @@ function Home() {
 
     return (
         <div className="py-2 px-4 md:p-4 text-4xl font-strike flex flex-col items-center justify-start h-full w-full overflow-y-auto">
-            <img src="/logo-transparent.png" alt="League logo" className="w-2/3 object-cover" />
+            <img
+                src="/logo-transparent.png"
+                alt="League logo"
+                className="w-2/3 object-cover max-w-xl"
+            />
             <div className="text-xl md:text-2xl font-think-loved text-center">
                 <p className="mb-8">
                     It&apos;s Time to{' '}
@@ -29,7 +33,7 @@ function Home() {
                     </>
                 ) : (
                     <>
-                        <p className="mb-2 text-left">
+                        <p className="mb-1 text-left">
                             Welcome back fellow Footballer. You&apos;re probably here for your
                             weekly awards, eh?
                         </p>

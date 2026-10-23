@@ -1,3 +1,5 @@
+import { logger } from './services/logger';
+
 export type YahooStandingsResponse = {
     fantasy_content: {
         league: Array<{
@@ -406,6 +408,7 @@ export function transformRoster(data: YahooRosterResponse): TransformedPlayer[] 
 
 type YahooManagerData = {
     guid?: string;
+    manager_id?: string;
     nickname?: string;
     felo_score?: string;
     felo_tier?: string;
@@ -424,6 +427,7 @@ function extractTeamInfo(teamData: Array<unknown>) {
     const teamInfo = teamData[0];
     if (Array.isArray(teamInfo)) {
         for (const item of teamInfo) {
+            logger.info('item', item);
             if (item && typeof item === 'object') {
                 if ('team_id' in item) {
                     teamId = item.team_id as string;
@@ -436,8 +440,10 @@ function extractTeamInfo(teamData: Array<unknown>) {
                 }
                 if ('managers' in item && Array.isArray(item.managers)) {
                     const yahooManager = item.managers[0]?.manager as YahooManagerData;
+                    // fuck yahoo
+                    const id = yahooManager.nickname || '';
                     teamManager = {
-                        id: yahooManager.guid || '',
+                        id,
                         name: yahooManager.nickname || '',
                         fantasyScore: parseInt(yahooManager.felo_score || '0'),
                         fantasyTier: yahooManager.felo_tier || '',

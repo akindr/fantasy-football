@@ -8,6 +8,8 @@ import { uploadFile } from './file-upload';
 
 setGlobalOptions({ maxInstances: 2 });
 
+logger.info('setting up firebase app!');
+
 // Initialize Firebase
 initializeApp({
     projectId: 'get-schwifty-football',

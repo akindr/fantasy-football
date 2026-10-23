@@ -1,5 +1,5 @@
-export const GAME_KEY = '461';
-export const SCHWIFTY_LEAGUE_ID = '88883';
+export const GAME_KEY = 'nfl';
+export const SCHWIFTY_LEAGUE_ID = '36854';
 
 export const OLD_LEAGUE_KEYS = {
     '2025': { gameID: '461', leagueID: '88883' },

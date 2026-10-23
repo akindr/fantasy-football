@@ -106,12 +106,19 @@ export class YahooGateway {
             },
         });
         const responseStatus = response.status;
-        logger.info('Response status', { status: responseStatus });
+        logger.info('Response status', { url, status: responseStatus });
 
         if (responseStatus === 401 && !retry) {
             await this._reauthenticate(req, res);
             return this._makeRequest(url, req, res, true);
         } else if (responseStatus !== 200) {
+            const errorBody = await response.text();
+            logger.error('Yahoo error response', {
+                url,
+                status: responseStatus,
+                wwwAuthenticate: response.headers.get('www-authenticate'),
+                body: errorBody,
+            });
             throw new Error(`Unexpected error, status: ${responseStatus}`);
         }
 
@@ -244,6 +251,13 @@ export class YahooGateway {
         return response;
     }
 
+    async getUserLeagues(req: express.Request, res: express.Response) {
+        const url = getUrl(`users;use_login=1/games;game_keys=nfl/leagues`);
+        const response = await this._makeRequest(url, req, res);
+        logger.info('User leagues', { response: JSON.stringify(response) });
+        return response;
+    }
+
     async getLeague(req: express.Request, res: express.Response) {
         const allMatchups = [];
 
@@ -305,7 +319,8 @@ export class YahooGateway {
         };
     }
 
-    // For now, unexposed. We can expose again if necessary. This helps get every matchup for each week of our league's history
+    // Fetches every matchup for each week of the league's history.
+    // Exposed via the admin refresh-history route.
     async getAllMatchups(req: express.Request, res: express.Response): Promise<HistoricalData> {
         const dataFilePath = path.join(__dirname, '../../../../data/historical-matchups.json');
 

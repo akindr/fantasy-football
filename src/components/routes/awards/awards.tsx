@@ -10,10 +10,11 @@ import { ErrorDialog } from '../../shared/error-dialog';
 import { AiOutlineCloseCircle } from 'react-icons/ai';
 // import { CloverTrends } from './clovers-trends';
 import { FigsGossipCorner } from './figs-gossip-corner';
+import { MedleysStinker } from './medleys-stinker';
 import { EndScreen } from './end-screen';
 import { AuthenticationRedirectError } from '../../../services/yahoo-fantasy-service';
 
-const WEEK_OPTIONS = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+const WEEK_OPTIONS = [6];
 const NO_WEEK_SELECTED = -1;
 
 type ViewState =
@@ -206,6 +207,7 @@ export const AllAwardsContainer = ({ awards, week }: { awards: Award[]; week: nu
                 <AwardsDisplay key={award.matchup.id} award={award} />
             ))}
             {/* <CloverTrends /> */}
+            <MedleysStinker week={week} />
             <FigsGossipCorner week={week} />
             <EndScreen week={week} />
         </div>

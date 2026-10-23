@@ -6,14 +6,20 @@ import dotenv from 'dotenv';
 import { GeminiGateway } from './services/gemini-gateway';
 import { HistoricalYearData, YahooGateway } from './services/yahoo-gateway';
 import { logger } from './services/logger';
-import type { AwardData, Award, GossipCornerData, TokenData } from './types';
+import type {
+    AwardData,
+    Award,
+    GossipCornerData,
+    MedleysStinkerData,
+    TokenData,
+} from './types';
 import { DatabaseService } from './services/database-service';
 import { StorageService } from './services/storage-service';
 import { firebaseAuthMiddleware } from './auth-middleware';
 import { multipartFormMiddleware } from './multipart-form-middleware';
 import { computeHeadToHeadSummary } from './summary-data-helpers';
 
-import { LEAGUE_YEARS } from './constants';
+import { LEAGUE_YEARS, SCHWIFTY_LEAGUE_ID } from './constants';
 import { handleMultipartUpload } from './handlers/multipart-form-handler';
 
 dotenv.config();
@@ -53,7 +59,7 @@ function getApp(
     app.post(`${prefix}/oauth/token`, async (req: express.Request, res: express.Response) => {
         try {
             const { code } = req.body;
-            logger.info('Requesting token', { code, redirectUri: yahooRedirectUri });
+            logger.info('Requesting token', { code, redirectUri: yahooRedirectUri, yahooClientId });
 
             const payload = new URLSearchParams({
                 grant_type: 'authorization_code',
@@ -178,12 +184,32 @@ function getApp(
 
             const gossip = (await databaseService.get(
                 'figs-gossip-corner',
-                `gossip-${week}`
+                `gossip-${SCHWIFTY_LEAGUE_ID}-${week}`
             )) as GossipCornerData | null;
 
             res.json({ gossip });
         } catch (e) {
             logger.error('Error fetching figs gossip corner data:', e);
+            res.status(500).json({ error: 'Unexpected error', original: e });
+        }
+    });
+
+    app.get(`${prefix}/medleys-stinker`, async (req: express.Request, res: express.Response) => {
+        try {
+            const { week } = req.query;
+            if (!week) {
+                res.status(400).json({ error: 'week is required query parameter' });
+                return;
+            }
+
+            const stinker = (await databaseService.get(
+                'medleys-stinker',
+                `medleys-stinker-${SCHWIFTY_LEAGUE_ID}-${week}`
+            )) as MedleysStinkerData | null;
+
+            res.json({ stinker });
+        } catch (e) {
+            logger.error("Error fetching Medley's stinker data:", e);
             res.status(500).json({ error: 'Unexpected error', original: e });
         }
     });
@@ -209,13 +235,44 @@ function getApp(
             return;
         }
         try {
-            const league = await yahooGateway.getLeague(req, res);
-            res.json(league);
+            const leagues = await yahooGateway.getUserLeagues(req, res);
+            res.json(leagues);
         } catch (e) {
             logger.error('Error fetching league:', e);
             res.status(500).json({ error: 'Unexpected error', original: e });
         }
     });
+
+    app.get(
+        `${prefix}/admin/refresh-history`,
+        firebaseAuthMiddleware,
+        async (req: express.Request, res: express.Response) => {
+            if (!req.cookies.__session) {
+                res.status(401).json({ error: 'Unauthorized' });
+                return;
+            }
+            try {
+                const historicalData = await yahooGateway.getAllMatchups(req, res);
+
+                for (const year of Object.keys(historicalData)) {
+                    await databaseService.set(
+                        'historical-data',
+                        `matchups-${year}`,
+                        historicalData[year]
+                    );
+                }
+
+                res.json({
+                    success: true,
+                    years: Object.keys(historicalData),
+                    historicalData,
+                });
+            } catch (e) {
+                logger.error('Error refreshing historical matchups:', e);
+                res.status(500).json({ error: 'Unexpected error', original: e });
+            }
+        }
+    );
 
     app.get(`${prefix}/generate-image`, async (req: express.Request, res: express.Response) => {
         logger.info('Generating image', { prompt: req.query.prompt });
@@ -350,7 +407,7 @@ function getApp(
                     return;
                 }
 
-                const doc = `gossip-${week}`;
+                const doc = `gossip-${SCHWIFTY_LEAGUE_ID}-${week}`;
                 const payload: GossipCornerData = {
                     week,
                     subtitle,
@@ -362,6 +419,45 @@ function getApp(
                 res.status(200).send({ success: true });
             } catch (e) {
                 logger.error('Error writing figs gossip corner data:', e);
+                res.status(500).json({ error: 'Unexpected error', original: e });
+            }
+        }
+    );
+
+    app.post(
+        `${prefix}/data/medleys-stinker`,
+        firebaseAuthMiddleware,
+        async (req: express.Request, res: express.Response) => {
+            try {
+                const { week, playerName, description, imageURL } = req.body as MedleysStinkerData;
+
+                if (typeof week !== 'number' || Number.isNaN(week)) {
+                    res.status(400).json({
+                        error: 'week is required in the request body and must be a number',
+                    });
+                    return;
+                }
+
+                if (!playerName?.trim() || !description?.trim() || !imageURL?.trim()) {
+                    res.status(400).json({
+                        error: 'playerName, description, and imageURL are required',
+                    });
+                    return;
+                }
+
+                const doc = `medleys-stinker-${SCHWIFTY_LEAGUE_ID}-${week}`;
+                const payload: MedleysStinkerData = {
+                    week,
+                    playerName: playerName.trim(),
+                    description: description.trim(),
+                    imageURL: imageURL.trim(),
+                    updatedAt: new Date().toISOString(),
+                };
+
+                await databaseService.set('medleys-stinker', doc, payload);
+                res.status(200).send({ success: true });
+            } catch (e) {
+                logger.error("Error writing Medley's stinker data:", e);
                 res.status(500).json({ error: 'Unexpected error', original: e });
             }
         }
