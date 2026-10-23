@@ -6,13 +6,7 @@ import dotenv from 'dotenv';
 import { GeminiGateway } from './services/gemini-gateway';
 import { HistoricalYearData, YahooGateway } from './services/yahoo-gateway';
 import { logger } from './services/logger';
-import type {
-    AwardData,
-    Award,
-    GossipCornerData,
-    MedleysStinkerData,
-    TokenData,
-} from './types';
+import type { AwardData, Award, GossipCornerData, MedleysStinkerData, TokenData } from './types';
 import { DatabaseService } from './services/database-service';
 import { StorageService } from './services/storage-service';
 import { firebaseAuthMiddleware } from './auth-middleware';
@@ -59,7 +53,7 @@ function getApp(
     app.post(`${prefix}/oauth/token`, async (req: express.Request, res: express.Response) => {
         try {
             const { code } = req.body;
-            logger.info('Requesting token', { code, redirectUri: yahooRedirectUri, yahooClientId });
+            logger.info('Requesting token', { redirectUri: yahooRedirectUri, yahooClientId });
 
             const payload = new URLSearchParams({
                 grant_type: 'authorization_code',
@@ -68,8 +62,6 @@ function getApp(
                 client_secret: yahooClientSecret,
                 code: code,
             });
-
-            logger.info(payload);
 
             const tokenResponse = await fetch('https://api.login.yahoo.com/oauth2/get_token', {
                 method: 'POST',
@@ -82,7 +74,17 @@ function getApp(
             const tokenData: TokenData = await tokenResponse.json();
             tokenData.expiry_server_time = Date.now() + (tokenData.expires_in || 0) * 1000;
 
-            logger.info('Token data', tokenData);
+            if (!tokenData?.access_token) {
+                const { error, error_description } = tokenData as unknown as Record<
+                    string,
+                    unknown
+                >;
+                logger.warn('Token exchange failed', {
+                    status: tokenResponse.status,
+                    error,
+                    error_description,
+                });
+            }
 
             if (!tokenData?.access_token) {
                 throw new Error('Failed to get access token');
@@ -105,7 +107,6 @@ function getApp(
 
     // Proxy to get standings for the FF league
     app.get(`${prefix}/standings`, async (req: express.Request, res: express.Response) => {
-        logger.info('Fetching standings', req.cookies);
         if (!req.cookies.__session) {
             res.status(401).json({ error: 'Unauthorized' });
             return;

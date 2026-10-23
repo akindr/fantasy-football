@@ -43,7 +43,6 @@ export class YahooGateway {
     private redirectUri: string;
 
     constructor(clientId: string, clientSecret: string, redirectUri: string) {
-        logger.info('YahooGateway constructor', { clientId, clientSecret });
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.redirectUri = redirectUri;
@@ -60,10 +59,6 @@ export class YahooGateway {
             client_id: this.clientId || '',
         };
         const payload = new URLSearchParams(refreshParams);
-        logger.info('Refresh request payload', {
-            ...refreshParams,
-            clientID: `Basic ${Buffer.from(`${this.clientId}:${this.clientSecret}`).toString('base64')}`,
-        });
         const tokenResponse = await fetch('https://api.login.yahoo.com/oauth2/get_token', {
             method: 'POST',
             headers: {
@@ -77,7 +72,17 @@ export class YahooGateway {
         updatedTokenData.expiry_server_time =
             Date.now() + (updatedTokenData.expires_in || 0) * 1000;
 
-        logger.info('Refresh request token', updatedTokenData);
+        if (!updatedTokenData.access_token) {
+            const { error, error_description } = updatedTokenData as unknown as Record<
+                string,
+                unknown
+            >;
+            logger.warn('Token refresh failed', {
+                status: tokenResponse.status,
+                error,
+                error_description,
+            });
+        }
         res.cookie('__session', updatedTokenData, {
             httpOnly: true,
             secure: true,

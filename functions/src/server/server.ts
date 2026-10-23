@@ -41,10 +41,9 @@ const geminiApiKey = process.env.FF_APP_GEMINI_API_KEY || '';
 
 logger.info('Environment variables', {
     clientId,
-    clientSecret,
     redirectUri,
-    geminiApiKey,
-    all: process.env.env,
+    hasClientSecret: !!clientSecret,
+    hasGeminiApiKey: !!geminiApiKey,
 });
 const app = getApp(clientId, clientSecret, redirectUri, geminiApiKey, '/api');
 
