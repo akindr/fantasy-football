@@ -27,6 +27,8 @@ export const AwardsForm: React.FC<AwardsFormProps> = ({ week, matchups, selected
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [uploadedImageUrl, setUploadedImageUrl] = useState<string>('');
     const [isUploading, setIsUploading] = useState(false);
+    const [isRefreshingHistory, setIsRefreshingHistory] = useState(false);
+    const [refreshHistoryMessage, setRefreshHistoryMessage] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
     // React Query for getting awards
@@ -102,6 +104,29 @@ export const AwardsForm: React.FC<AwardsFormProps> = ({ week, matchups, selected
             }
         );
         console.log(leagueDebugData);
+    };
+
+    const refreshHistory = async () => {
+        setIsRefreshingHistory(true);
+        setRefreshHistoryMessage(null);
+        try {
+            const history = await yahooFantasyService.makeRequest(
+                `${API_CONFIG.apiUri}/admin/refresh-history`,
+                {
+                    method: 'GET',
+                }
+            );
+            console.log(history);
+            const years = Array.isArray(history?.years) ? history.years.join(', ') : '';
+            setRefreshHistoryMessage(
+                years ? `History refreshed for ${years}` : 'History refreshed'
+            );
+        } catch (error) {
+            console.error('Error refreshing history:', error);
+            setRefreshHistoryMessage('Failed to refresh history');
+        } finally {
+            setIsRefreshingHistory(false);
+        }
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -304,7 +329,25 @@ export const AwardsForm: React.FC<AwardsFormProps> = ({ week, matchups, selected
                         <Button type="button" onClick={getLeagueDebug}>
                             League Debug
                         </Button>
+                        <Button
+                            type="button"
+                            onClick={refreshHistory}
+                            disabled={isRefreshingHistory}
+                        >
+                            {isRefreshingHistory ? 'Refreshing...' : 'Refresh History'}
+                        </Button>
                     </div>
+                    {refreshHistoryMessage && (
+                        <p
+                            className={
+                                refreshHistoryMessage.startsWith('Failed')
+                                    ? 'text-red-400 text-sm'
+                                    : 'text-green-400 text-sm'
+                            }
+                        >
+                            {refreshHistoryMessage}
+                        </p>
+                    )}
                     {createAwardMutation.isSuccess && (
                         <p className="text-green-400 text-sm">Award created successfully!</p>
                     )}

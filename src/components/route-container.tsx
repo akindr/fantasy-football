@@ -6,7 +6,7 @@ import { ImageGen } from './routes/image-gen';
 import { Home } from './routes/home';
 import { LeagueOverview } from './routes/league-overview';
 import { Awards } from './routes/awards/awards';
-import { Admin, FigsGossipCornerAdmin } from './routes/admin';
+import { Admin, FigsGossipCornerAdmin, MedleysStinkerAdmin } from './routes/admin';
 
 export function RoutesContainer() {
     return (
@@ -19,6 +19,7 @@ export function RoutesContainer() {
             <Route path="/awards" element={<Awards />} />
             <Route path="/admin/awards" element={<Admin />} />
             <Route path="/admin/figs-gossip-corner" element={<FigsGossipCornerAdmin />} />
+            <Route path="/admin/medleys-stinker" element={<MedleysStinkerAdmin />} />
         </Routes>
     );
 }

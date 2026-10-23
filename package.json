@@ -53,7 +53,8 @@
         "server-emulate": "firebase emulators:start",
         "deploy": "npm run build && firebase deploy",
         "deploy-functions": "firebase deploy --only functions",
-        "deploy-hosting": "firebase deploy --only hosting"
+        "deploy-hosting": "firebase deploy --only hosting",
+        "set-historical-matchups": "ts-node functions/scripts/set-historical-matchups.ts"
     },
     "eslintConfig": {
         "extends": [

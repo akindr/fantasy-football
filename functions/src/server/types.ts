@@ -45,6 +45,14 @@ export type GossipCornerData = {
     updatedAt?: string;
 };
 
+export type MedleysStinkerData = {
+    week: number;
+    playerName: string;
+    description: string;
+    imageURL: string;
+    updatedAt?: string;
+};
+
 export type TeamSummaryData = {
     players: TransformedPlayer[];
     name: string;
