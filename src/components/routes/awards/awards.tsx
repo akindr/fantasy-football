@@ -14,7 +14,7 @@ import { MedleysStinker } from './medleys-stinker';
 import { EndScreen } from './end-screen';
 import { AuthenticationRedirectError } from '../../../services/yahoo-fantasy-service';
 
-const WEEK_OPTIONS = [6];
+const WEEK_OPTIONS = [6, 11];
 const NO_WEEK_SELECTED = -1;
 
 type ViewState =
